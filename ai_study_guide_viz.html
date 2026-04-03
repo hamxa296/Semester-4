@@ -1,0 +1,962 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#fafaf8;color:#1a1a1a;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:210px;min-width:210px;background:#fff;border-right:1px solid #e5e3dc;overflow-y:auto;position:sticky;top:0;height:100vh}
+.sb-head{padding:14px 14px 6px;font-size:10.5px;font-weight:600;letter-spacing:.08em;color:#888;text-transform:uppercase}
+.sb-item{display:block;width:100%;text-align:left;background:none;border:none;padding:7px 14px;font-size:12.5px;color:#555;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.sb-item:hover{background:#faeeda;color:#412402}
+.sb-item.on{background:#faeeda;color:#854f0b;border-left-color:#ef9f27;font-weight:600}
+.content{flex:1;padding:28px 32px;max-width:780px;overflow-y:auto}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:22px;padding-bottom:12px;border-bottom:2px solid #ef9f27}
+.sec-badge{background:#ef9f27;color:#412402;font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px}
+.sec-name{font-size:19px;font-weight:600}
+h2{font-size:15px;font-weight:600;color:#854f0b;margin:20px 0 10px}
+h3{font-size:13.5px;font-weight:600;color:#0f6e56;margin:14px 0 7px}
+p,li{font-size:13px;line-height:1.7;color:#444}
+.amber-box{background:#faeeda;border:1px solid #fac775;border-radius:8px;padding:12px 14px;margin:10px 0}
+.amber-box .ttl{font-size:11.5px;font-weight:700;color:#412402;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.amber-box li{font-size:12.5px;color:#633806;padding:2px 0}
+.teal-box{background:#e1f5ee;border:1px solid #5dcaa5;border-radius:8px;padding:12px 14px;margin:10px 0}
+.teal-box .ttl{font-size:11.5px;font-weight:700;color:#04342c;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.teal-box li{font-size:12.5px;color:#085041;padding:2px 0}
+.red-box{background:#fcebeb;border:1px solid #f09595;border-radius:8px;padding:12px 14px;margin:10px 0}
+.red-box .ttl{font-size:11.5px;font-weight:700;color:#501313;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.red-box p{font-size:12.5px;color:#791f1f}
+.procon{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.pro-col{background:#eaf3de;border-radius:8px;padding:10px 12px;border:1px solid #c0dd97}
+.con-col{background:#fcebeb;border-radius:8px;padding:10px 12px;border:1px solid #f09595}
+.pro-col .ttl{font-size:11.5px;font-weight:700;color:#173404;margin-bottom:5px}
+.con-col .ttl{font-size:11.5px;font-weight:700;color:#501313;margin-bottom:5px}
+.pro-col li{font-size:12.5px;color:#27500a;list-style:none;padding:2px 0 2px 14px;position:relative}
+.con-col li{font-size:12.5px;color:#791f1f;list-style:none;padding:2px 0 2px 14px;position:relative}
+.pro-col li::before{content:"✓";position:absolute;left:0;font-weight:700}
+.con-col li::before{content:"✗";position:absolute;left:0;font-weight:700}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.cmp-a{background:#faeeda;border-radius:8px;padding:10px 12px;border:1px solid #fac775}
+.cmp-b{background:#e1f5ee;border-radius:8px;padding:10px 12px;border:1px solid #5dcaa5}
+.cmp-a .ttl{font-size:12px;font-weight:700;color:#412402;margin-bottom:6px}
+.cmp-b .ttl{font-size:12px;font-weight:700;color:#04342c;margin-bottom:6px}
+.cmp-a li,.cmp-b li{font-size:12.5px;list-style:none;padding:2px 0 2px 12px;position:relative}
+.cmp-a li{color:#633806}.cmp-a li::before{content:"•";position:absolute;left:0;color:#ef9f27}
+.cmp-b li{color:#085041}.cmp-b li::before{content:"•";position:absolute;left:0;color:#1d9e75}
+.fml{display:flex;align-items:stretch;border-radius:7px;overflow:hidden;border:1px solid #e5e3dc;margin:7px 0}
+.fml-lbl{background:#2c2c2a;color:#d3d1c7;padding:7px 12px;font-size:12px;font-weight:600;min-width:110px}
+.fml-eq{background:#faeeda;color:#412402;padding:7px 12px;font-family:monospace;font-size:12.5px;flex:1;font-weight:600}
+.fml-note{background:#f8f7f4;color:#888;padding:7px 10px;font-size:11.5px;font-style:italic;min-width:110px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+th{background:#2c2c2a;color:#d3d1c7;padding:7px 10px;text-align:left;font-weight:600}
+td{padding:6px 10px;border-bottom:1px solid #e8e6e0;color:#444;vertical-align:top}
+tr:nth-child(even) td{background:#f8f7f4}
+ul.plain{list-style:none;padding:0;margin:6px 0}
+ul.plain li{padding:3px 0 3px 16px;position:relative;font-size:12.5px;color:#555;line-height:1.6}
+ul.plain li::before{content:"›";position:absolute;left:0;color:#ef9f27;font-weight:700}
+.viz-wrap{background:#fff;border:1px solid #e5e3dc;border-radius:10px;padding:14px;margin:14px 0}
+.viz-title{font-size:11px;font-weight:700;color:#854f0b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.viz-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+canvas{display:block;border-radius:6px;width:100%;height:auto}
+.case{border:1px solid #cecbf6;border-radius:10px;overflow:hidden;margin:14px 0}
+.case-hdr{background:#534ab7;color:#eeedfe;padding:8px 14px;font-size:12px;font-weight:700}
+.case-body{padding:13px 14px;background:#fff}
+.case-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#534ab7;margin-bottom:3px}
+.case-q{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.55}
+.case-opts{list-style:none;padding:0;margin:6px 0}
+.case-opts li{font-size:12.5px;color:#666;padding:2px 0;line-height:1.6}
+.reveal-btn{background:#eeedfe;border:1px solid #afa9ec;border-radius:6px;padding:6px 14px;font-size:12.5px;color:#26215c;cursor:pointer;margin-top:8px;font-weight:600}
+.ans-box{background:#eaf3de;border-radius:7px;padding:10px 12px;margin-top:8px;border:1px solid #c0dd97}
+.ans-lbl{font-size:11px;font-weight:700;color:#173404;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.ans-txt{font-size:12.5px;color:#27500a;line-height:1.65}
+</style>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sb-head">Sections</div>
+  <button class="sb-item on" onclick="show(0,this)">1. AI Agents & Foundations</button>
+  <button class="sb-item" onclick="show(1,this)">2. State Space & Formulation</button>
+  <button class="sb-item" onclick="show(2,this)">3. Uninformed Search</button>
+  <button class="sb-item" onclick="show(3,this)">4. Informed Search & A*</button>
+  <button class="sb-item" onclick="show(4,this)">5. Optimization</button>
+  <button class="sb-item" onclick="show(5,this)">6. Genetic Algorithm</button>
+  <button class="sb-item" onclick="show(6,this)">7. Adversarial Search</button>
+  <button class="sb-item" onclick="show(7,this)">8. Machine Learning</button>
+  <button class="sb-item" onclick="show(8,this)">9. Neural Networks</button>
+  <button class="sb-item" onclick="show(9,this)">10. CNNs & Vision</button>
+  <button class="sb-item" onclick="show(10,this)">11. Algorithm Comparisons</button>
+  <button class="sb-item" onclick="show(11,this)">12. Case Studies</button>
+</nav>
+<div class="content">
+
+<!-- S0 -->
+<div id="s0">
+  <div class="sec-hdr"><span class="sec-badge">1</span><span class="sec-name">AI Agents & Foundations</span></div>
+  <p>An <b>agent</b> perceives its environment through sensors and acts upon it through actuators. A rational agent chooses actions that maximise its expected performance measure.</p>
+  <div class="amber-box"><div class="ttl">PEAS Framework</div><ul><li>Performance — what counts as success?</li><li>Environment — what world does the agent inhabit?</li><li>Actuators — what actions can it take?</li><li>Sensors — what can it perceive?</li><li>Example (self-driving car): P=safety, E=roads, A=steering/brakes, S=cameras/LIDAR</li></ul></div>
+  <h2>Types of Agents</h2>
+  <table><tr><th>Type</th><th>How it works</th><th>Example</th></tr>
+  <tr><td>Simple reflex</td><td>Condition-action rules, ignores history</td><td>Thermostat</td></tr>
+  <tr><td>Model-based</td><td>Keeps internal state model</td><td>Self-driving with memory</td></tr>
+  <tr><td>Goal-based</td><td>Plans toward a goal</td><td>Navigation app</td></tr>
+  <tr><td>Utility-based</td><td>Maximises a utility function</td><td>Game-playing AI</td></tr>
+  <tr><td>Learning</td><td>Improves from experience</td><td>ChatGPT, recommenders</td></tr></table>
+  <h2>Traditional AI vs Modern AI</h2>
+  <div class="cmp">
+    <div class="cmp-a"><div class="ttl">Traditional / Symbolic AI</div><ul><li>Rule-based: explicit if-then logic</li><li>Expert systems (MYCIN, DENDRAL)</li><li>Brittle — breaks outside programmed rules</li><li>Transparent and interpretable</li></ul></div>
+    <div class="cmp-b"><div class="ttl">Modern / Statistical AI</div><ul><li>Data-driven: learns from examples</li><li>Machine learning, deep learning, LLMs</li><li>Flexible — generalises to unseen data</li><li>Often a "black box"</li></ul></div>
+  </div>
+  <div class="viz-wrap">
+    <div class="viz-title">Agent types — decision-making complexity</div>
+    <canvas id="cv-agents" width="540" height="140"></canvas>
+  </div>
+</div>
+
+<!-- S1 -->
+<div id="s1" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">2</span><span class="sec-name">State Space & Problem Formulation</span></div>
+  <div class="amber-box"><div class="ttl">Five components of a search problem</div><ul><li>1. Initial state — where do we start?</li><li>2. Actions — what can the agent do?</li><li>3. Transition model — what state does action A in state S produce?</li><li>4. Goal test — is this a solution?</li><li>5. Path cost — cumulative cost of a sequence of actions</li></ul></div>
+  <h2>State vs. Node</h2>
+  <div class="cmp">
+    <div class="cmp-a"><div class="ttl">State</div><ul><li>Physical configuration of the world</li><li>Just the facts right now</li><li>No search metadata</li></ul></div>
+    <div class="cmp-b"><div class="ttl">Node (data structure)</div><ul><li>Stores: state, parent, action, cost, depth</li><li>Multiple nodes can map to same state</li><li>Carries the journey, not just destination</li></ul></div>
+  </div>
+  <h2>State Space Graph vs. Search Tree</h2>
+  <div class="cmp">
+    <div class="cmp-a"><div class="ttl">State Space Graph</div><ul><li>Static map — each state appears once</li><li>Built conceptually before search</li></ul></div>
+    <div class="cmp-b"><div class="ttl">Search Tree</div><ul><li>Generated dynamically during search</li><li>Same state may appear multiple times</li></ul></div>
+  </div>
+  <div class="viz-wrap">
+    <div class="viz-title">State space graph vs search tree</div>
+    <canvas id="cv-ssgraph" width="540" height="170"></canvas>
+  </div>
+</div>
+
+<!-- S2 -->
+<div id="s2" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">3</span><span class="sec-name">Uninformed Search</span></div>
+  <p>Blind search — no knowledge of how close we are to the goal.</p>
+  <div class="amber-box"><div class="ttl">Frontier & Explored Set</div><ul><li>Frontier — discovered but not yet expanded</li><li>Explored set — visited; prevents infinite loops</li><li>Graph search (with explored set) avoids revisiting states</li></ul></div>
+  <div class="viz-wrap">
+    <div class="viz-title">BFS vs DFS — node expansion order on the same tree</div>
+    <canvas id="cv-search" width="540" height="200"></canvas>
+  </div>
+  <h2>BFS — Breadth-First</h2>
+  <div class="fml"><div class="fml-lbl">Structure</div><div class="fml-eq">FIFO Queue</div><div class="fml-note">Shallowest node first</div></div>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>Optimal — shallowest solution</li><li>Complete</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>Huge memory O(b^d)</li><li>Slow for deep goals</li></ul></div></div>
+  <h2>DFS — Depth-First</h2>
+  <div class="fml"><div class="fml-lbl">Structure</div><div class="fml-eq">LIFO Stack</div><div class="fml-note">Deepest node first</div></div>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>Memory efficient O(bm)</li><li>Fast if solution is deep</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>Not optimal, not complete</li><li>Can loop infinitely</li></ul></div></div>
+  <h2>UCS — Uniform Cost</h2>
+  <div class="fml"><div class="fml-lbl">Selection</div><div class="fml-eq">f(n) = g(n)</div><div class="fml-note">Cheapest path cost</div></div>
+  <div class="teal-box"><div class="ttl">IDDFS — Best Uninformed Algorithm</div><ul><li>Runs DFS repeatedly with increasing depth limit L=0,1,2…</li><li>Space: O(bd) like DFS | Time: O(b^d) like BFS | Complete + Optimal</li></ul></div>
+  <table><tr><th>Algorithm</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th></tr>
+  <tr><td>BFS</td><td>YES</td><td>YES*</td><td>O(b^d)</td><td>O(b^d)</td></tr>
+  <tr><td>DFS</td><td>NO</td><td>NO</td><td>O(b^m)</td><td>O(bm)</td></tr>
+  <tr><td>UCS</td><td>YES</td><td>YES</td><td>O(b^C*/ε)</td><td>O(b^C*/ε)</td></tr>
+  <tr><td>IDDFS</td><td>YES</td><td>YES*</td><td>O(b^d)</td><td>O(bd)</td></tr></table>
+</div>
+
+<!-- S3 -->
+<div id="s3" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">4</span><span class="sec-name">Informed Search & A*</span></div>
+  <div class="fml"><div class="fml-lbl">h(n)</div><div class="fml-eq">estimated cost from n to goal</div><div class="fml-note">Must never overestimate</div></div>
+  <div class="teal-box"><div class="ttl">Admissibility</div><ul><li>h(n) ≤ h*(n) for all n — never overestimates true cost</li><li>With admissible h(n), A* is guaranteed OPTIMAL</li><li>Consistent: h(n) ≤ cost(n→n') + h(n') — needed for graph search optimality</li></ul></div>
+  <h2>A* Algorithm</h2>
+  <div class="fml"><div class="fml-lbl">A* formula</div><div class="fml-eq">f(n) = g(n) + h(n)</div><div class="fml-note">Past cost + estimated future</div></div>
+  <div class="viz-wrap">
+    <div class="viz-title">A* expansion — nodes coloured by f(n) value. A* expands in f-cost order; greedy expands only by h(n)</div>
+    <canvas id="cv-astar" width="540" height="200"></canvas>
+  </div>
+  <div class="procon"><div class="pro-col"><div class="ttl">A* Pros</div><ul><li>Optimal with admissible h</li><li>Complete in finite spaces</li><li>Dominates all blind algorithms</li></ul></div><div class="con-col"><div class="ttl">A* Cons</div><ul><li>High memory O(b^d)</li><li>Heuristic design is non-trivial</li></ul></div></div>
+  <h2>8-Puzzle Heuristics</h2>
+  <div class="cmp">
+    <div class="cmp-a"><div class="ttl">Misplaced Tiles</div><ul><li>Count tiles not in goal position</li><li>Weaker — h=1 even if 5 moves away</li><li>Expands more nodes</li></ul></div>
+    <div class="cmp-b"><div class="ttl">Manhattan Distance ← prefer this</div><ul><li>Sum of row+col displacements</li><li>Tighter — h=5 if 5 moves away</li><li>Expands fewer nodes, faster</li></ul></div>
+  </div>
+</div>
+
+<!-- S4 -->
+<div id="s4" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">5</span><span class="sec-name">Optimization</span></div>
+  <p>Only care about the quality of the final state — not the path. Navigate by moving between neighbouring states guided by an objective function.</p>
+  <div class="amber-box"><div class="ttl">Key vocabulary</div><ul><li>Global optimum — absolute best solution</li><li>Local optimum — better than all neighbours, not globally best</li><li>Plateau — all neighbours have equal value — algorithm stalls</li></ul></div>
+  <div class="viz-wrap">
+    <div class="viz-title">Optimization landscape — hill climbing vs simulated annealing</div>
+    <canvas id="cv-landscape" width="540" height="200"></canvas>
+  </div>
+  <h2>Hill Climbing</h2>
+  <p>Always move to the best neighbouring state. Stop when no neighbour improves.</p>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>Extremely fast, near-zero memory</li><li>Works on smooth landscapes</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>Trapped in local optima</li><li>Stuck on plateaus and ridges</li></ul></div></div>
+  <h2>Simulated Annealing</h2>
+  <div class="fml"><div class="fml-lbl">Accept prob</div><div class="fml-eq">P = e^(ΔE / T)</div><div class="fml-note">ΔE=change, T=temperature</div></div>
+  <p>High T → exploration (bad moves allowed). Low T → exploitation (only improvements). Cool gradually: T = T_max × α^t (α ≈ 0.99)</p>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>Escapes local optima</li><li>Used in VLSI, TSP, scheduling</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>Cooling schedule is an art</li><li>No finite-time guarantee</li></ul></div></div>
+</div>
+
+<!-- S5 -->
+<div id="s5" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">6</span><span class="sec-name">Genetic Algorithm</span></div>
+  <p>Maintain a <b>population</b> of solutions and evolve them over generations.</p>
+  <div class="teal-box"><div class="ttl">GA cycle</div><ul><li>1. Initialise — N random solutions</li><li>2. Evaluate — compute fitness f(s) for each</li><li>3. Select — parents (higher fitness = higher chance)</li><li>4. Crossover — combine parents → offspring</li><li>5. Mutate — random gene changes</li><li>6. Replace — offspring replace weakest</li><li>7. Repeat until convergence</li></ul></div>
+  <div class="viz-wrap">
+    <div class="viz-title">GA convergence — best and average fitness over generations</div>
+    <canvas id="cv-ga" width="540" height="180"></canvas>
+  </div>
+  <h2>Selection Strategies</h2>
+  <div class="fml"><div class="fml-lbl">Roulette</div><div class="fml-eq">P(i) = f(i) / Σ f(j)</div><div class="fml-note">Proportional to fitness</div></div>
+  <table><tr><th>Type</th><th>How it works</th><th>When to use</th></tr>
+  <tr><td>Single-point crossover</td><td>Split at one point; swap tails</td><td>Simple problems</td></tr>
+  <tr><td>Two-point crossover</td><td>Two cuts; swap middle</td><td>More mixing needed</td></tr>
+  <tr><td>Uniform crossover</td><td>Each gene from either parent 50/50</td><td>Maximum mixing</td></tr></table>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>Parallelisable population</li><li>Escapes local optima</li><li>Works on combinatorial problems</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>No global optimum guarantee</li><li>Many hyperparameters</li><li>Slow on smooth problems</li></ul></div></div>
+</div>
+
+<!-- S6 -->
+<div id="s6" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">7</span><span class="sec-name">Adversarial Search</span></div>
+  <p>Zero-sum games: MAX maximises utility, MIN minimises it. Both play optimally.</p>
+  <div class="viz-wrap">
+    <div class="viz-title">Minimax tree with alpha-beta pruning — grey nodes are pruned (never evaluated)</div>
+    <canvas id="cv-minimax" width="540" height="210"></canvas>
+  </div>
+  <h2>Minimax Formulas</h2>
+  <div class="fml"><div class="fml-lbl">Terminal</div><div class="fml-eq">MINIMAX(s) = UTILITY(s)</div><div class="fml-note"></div></div>
+  <div class="fml"><div class="fml-lbl">MAX node</div><div class="fml-eq">max_a MINIMAX(RESULT(s,a))</div><div class="fml-note"></div></div>
+  <div class="fml"><div class="fml-lbl">MIN node</div><div class="fml-eq">min_a MINIMAX(RESULT(s,a))</div><div class="fml-note"></div></div>
+  <h2>Alpha-Beta Pruning</h2>
+  <div class="fml"><div class="fml-lbl">Alpha (α)</div><div class="fml-eq">best MAX can guarantee so far</div><div class="fml-note">MAX won't go below α</div></div>
+  <div class="fml"><div class="fml-lbl">Beta (β)</div><div class="fml-eq">best MIN can guarantee so far</div><div class="fml-note">MIN won't go above β</div></div>
+  <div class="teal-box"><div class="ttl">Alpha-Beta complexity</div><ul><li>Best case (perfect ordering): O(b^(m/2)) — doubles searchable depth</li><li>Worst case (bad ordering): O(b^m) — same as plain minimax</li><li>Same result as minimax, always</li></ul></div>
+</div>
+
+<!-- S7 -->
+<div id="s7" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">8</span><span class="sec-name">Machine Learning</span></div>
+  <div class="viz-wrap">
+    <div class="viz-title">Overfitting vs underfitting — training error vs validation error over model complexity</div>
+    <canvas id="cv-overfit" width="540" height="200"></canvas>
+  </div>
+  <div class="amber-box"><div class="ttl">Supervised learning vocabulary</div><ul><li>Features X — inputs | Labels Y — outputs</li><li>Training set — fit model | Validation — tune | Test — NEVER touch during training</li></ul></div>
+  <h2>kNN</h2>
+  <div class="fml"><div class="fml-lbl">Distance</div><div class="fml-eq">d(x,x') = √(Σ(xi−xi')²)</div><div class="fml-note">Euclidean</div></div>
+  <div class="procon"><div class="pro-col"><div class="ttl">Pros</div><ul><li>No training phase</li><li>Intuitive</li></ul></div><div class="con-col"><div class="ttl">Cons</div><ul><li>Slow prediction</li><li>Curse of dimensionality</li></ul></div></div>
+  <h2>Decision Trees</h2>
+  <div class="fml"><div class="fml-lbl">Entropy</div><div class="fml-eq">H(S) = −Σ pᵢ · log₂(pᵢ)</div><div class="fml-note">Impurity of set S</div></div>
+  <div class="fml"><div class="fml-lbl">Info Gain</div><div class="fml-eq">IG(S,A) = H(S) − Σ(|Sv|/|S|)·H(Sv)</div><div class="fml-note">Entropy drop after split</div></div>
+  <h2>SVM</h2>
+  <div class="fml"><div class="fml-lbl">Margin</div><div class="fml-eq">2 / ||w||</div><div class="fml-note">Maximise this</div></div>
+  <div class="red-box"><div class="ttl">The XOR problem</div><p>No single straight line can separate XOR. Perceptron and linear SVM cannot learn it. Solutions: kernel SVM or neural networks with hidden layers.</p></div>
+</div>
+
+<!-- S8 -->
+<div id="s8" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">9</span><span class="sec-name">Neural Networks</span></div>
+  <div class="fml"><div class="fml-lbl">Neuron output</div><div class="fml-eq">y = σ(w·x + b)</div><div class="fml-note">σ = activation function</div></div>
+  <h2>Activation Functions</h2>
+  <div class="viz-wrap">
+    <div class="viz-title">Activation functions plotted over x ∈ [−4, 4]</div>
+    <div class="viz-grid2">
+      <canvas id="cv-relu" width="260" height="160"></canvas>
+      <canvas id="cv-sigmoid" width="260" height="160"></canvas>
+      <canvas id="cv-tanh" width="260" height="160"></canvas>
+      <canvas id="cv-lrelu" width="260" height="160"></canvas>
+    </div>
+  </div>
+  <table><tr><th>Function</th><th>Formula</th><th>Properties</th></tr>
+  <tr><td>ReLU</td><td>max(0, z)</td><td>Fast, sparse; most common in hidden layers</td></tr>
+  <tr><td>Sigmoid</td><td>1/(1+e^(−z))</td><td>Output 0–1; binary classification; vanishing gradient</td></tr>
+  <tr><td>Tanh</td><td>(e^z−e^(−z))/(e^z+e^(−z))</td><td>Output −1 to 1; zero-centred; vanishing gradient</td></tr>
+  <tr><td>Leaky ReLU</td><td>z if z>0 else 0.01z</td><td>Fixes dying ReLU problem</td></tr>
+  <tr><td>Softmax</td><td>e^(zᵢ)/Σe^(zⱼ)</td><td>Multi-class output probabilities</td></tr></table>
+  <h2>Backpropagation & Training</h2>
+  <div class="viz-wrap">
+    <div class="viz-title">Gradient descent — loss decreasing over training epochs (mini-batch SGD)</div>
+    <canvas id="cv-loss" width="540" height="160"></canvas>
+  </div>
+  <div class="fml"><div class="fml-lbl">Weight update</div><div class="fml-eq">w ← w − η · ∂L/∂w</div><div class="fml-note">η = learning rate</div></div>
+  <div class="red-box"><div class="ttl">Vanishing gradient — and how it was fixed</div><p>Gradients shrink exponentially through many sigmoid/tanh layers. Fixed by: ReLU activations, Batch Normalisation, Residual connections (ResNet), Xavier/He initialisation.</p></div>
+</div>
+
+<!-- S9 -->
+<div id="s9" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">10</span><span class="sec-name">CNNs & Computer Vision</span></div>
+  <div class="viz-wrap">
+    <div class="viz-title">CNN architecture — data flows left to right, shrinking spatially but growing in depth</div>
+    <canvas id="cv-cnn" width="540" height="160"></canvas>
+  </div>
+  <div class="viz-wrap">
+    <div class="viz-title">Convolution operation — a 3×3 filter slides over the input computing dot products</div>
+    <canvas id="cv-conv" width="540" height="200"></canvas>
+  </div>
+  <div class="fml"><div class="fml-lbl">Output value</div><div class="fml-eq">O[i,j] = Σ I[i+m,j+n]·K[m,n]</div><div class="fml-note">I=input, K=kernel</div></div>
+  <div class="fml"><div class="fml-lbl">Output size</div><div class="fml-eq">O = (W − F + 2P) / S + 1</div><div class="fml-note">W,F,P,S = input,filter,padding,stride</div></div>
+  <div class="amber-box"><div class="ttl">Key concepts</div><ul><li>Weight sharing — same filter weights at every location → far fewer parameters</li><li>Stride — pixels per step; stride=2 halves output size</li><li>Padding — 'same': output same size | 'valid': output shrinks</li></ul></div>
+  <table><tr><th>Depth</th><th>Features learned</th><th>Example</th></tr>
+  <tr><td>Early layers</td><td>Low-level</td><td>Edges, corners, blobs</td></tr>
+  <tr><td>Middle layers</td><td>Mid-level patterns</td><td>Textures, shapes</td></tr>
+  <tr><td>Deep layers</td><td>High-level concepts</td><td>Faces, objects</td></tr></table>
+</div>
+
+<!-- S10 -->
+<div id="s10" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">11</span><span class="sec-name">Algorithm Comparisons</span></div>
+  <div class="amber-box"><div class="ttl">Search decision guide</div><ul><li>Equal costs, shallow goal? → BFS</li><li>Variable costs, no heuristic? → UCS</li><li>Good heuristic available? → A*</li><li>Tight memory, unknown depth? → IDDFS</li><li>Hard depth limit? → DLS</li><li>Adversarial game? → Alpha-Beta</li></ul></div>
+  <table><tr><th>Algorithm</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th><th>Best for</th></tr>
+  <tr><td>BFS</td><td>YES</td><td>YES*</td><td>O(b^d)</td><td>O(b^d)</td><td>Shallow, equal costs</td></tr>
+  <tr><td>DFS</td><td>NO</td><td>NO</td><td>O(b^m)</td><td>O(bm)</td><td>Memory-scarce</td></tr>
+  <tr><td>UCS</td><td>YES</td><td>YES</td><td>O(b^C*/ε)</td><td>O(b^C*/ε)</td><td>Variable costs</td></tr>
+  <tr><td>IDDFS</td><td>YES</td><td>YES*</td><td>O(b^d)</td><td>O(bd)</td><td>Unknown depth</td></tr>
+  <tr><td>A*</td><td>YES</td><td>YES**</td><td>O(b^d)</td><td>O(b^d)</td><td>Heuristic available</td></tr></table>
+  <h2>Optimization Guide</h2>
+  <table><tr><th>Scenario</th><th>Algorithm</th><th>Why</th></tr>
+  <tr><td>Smooth landscape</td><td>Hill Climbing</td><td>Fast, sufficient</td></tr>
+  <tr><td>Rugged, many local optima</td><td>Simulated Annealing</td><td>Escapes traps</td></tr>
+  <tr><td>Combinatorial (TSP, scheduling)</td><td>Genetic Algorithm</td><td>Population diversity</td></tr>
+  <tr><td>Non-differentiable objective</td><td>SA or GA</td><td>No gradient needed</td></tr>
+  <tr><td>Differentiable objective</td><td>Gradient Descent</td><td>Much faster</td></tr></table>
+  <h2>ML Algorithm Guide</h2>
+  <table><tr><th>Algorithm</th><th>Data size</th><th>Interpretable</th><th>Best for</th></tr>
+  <tr><td>kNN</td><td>Small</td><td>YES</td><td>Simple, small datasets</td></tr>
+  <tr><td>Decision Tree</td><td>Any</td><td>BEST</td><td>Rule extraction, explainability</td></tr>
+  <tr><td>SVM</td><td>Medium</td><td>No</td><td>High-dim data</td></tr>
+  <tr><td>Neural Network</td><td>Large</td><td>No</td><td>Complex patterns</td></tr>
+  <tr><td>CNN</td><td>Large</td><td>No</td><td>Images, spatial data</td></tr></table>
+</div>
+
+<!-- S11 -->
+<div id="s11" style="display:none">
+  <div class="sec-hdr"><span class="sec-badge">12</span><span class="sec-name">Case Studies</span></div>
+  <p style="font-size:13px;color:#666;margin-bottom:16px">Read each scenario, pick your approach, then reveal the answer.</p>
+
+  <div class="case"><div class="case-hdr">Case Study 1 — Warehouse Robot Navigation</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>Fully-known warehouse grid, all moves cost 1, known start and destination, limited memory.</p>
+    <div class="case-q">Which algorithm gives the optimal path with least wasted computation?</div>
+    <ul class="case-opts"><li>A) DFS — memory efficient</li><li>B) BFS — shortest path</li><li>C) A* with Manhattan distance</li><li>D) Genetic Algorithm</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">C) A* with Manhattan Distance</div><div class="ans-txt">Fully observable, deterministic, known goal → perfect for A*. Manhattan distance is admissible on a grid. A* finds optimal path while expanding far fewer nodes than BFS. BFS works but is wasteful. DFS not optimal. GA is overkill.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 2 — Medical X-Ray Classification</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>50,000 labelled chest X-ray images. Classify as healthy/pneumonia/COVID-19. Radiologists need to understand WHY decisions are made.</p>
+    <div class="case-q">Which approach handles scale and meets interpretability requirements?</div>
+    <ul class="case-opts"><li>A) k-Nearest Neighbours</li><li>B) Single decision tree</li><li>C) CNN with Grad-CAM</li><li>D) SVM with RBF kernel</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">C) CNN with Grad-CAM visualisation</div><div class="ans-txt">50,000 images → large-scale image task → CNNs are built for this. Grad-CAM highlights which image regions drove the prediction — satisfying radiologist interpretability. kNN and SVM cannot handle raw images at this scale. A single decision tree massively underfits pixel data.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 3 — Factory Job Scheduling</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>Schedule 200 jobs across 50 machines to minimise completion time. NP-hard, billions of configurations, many local optima.</p>
+    <div class="case-q">Which optimisation technique is best suited?</div>
+    <ul class="case-opts"><li>A) Hill Climbing</li><li>B) BFS</li><li>C) Genetic Algorithm</li><li>D) A* Search</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">C) Genetic Algorithm</div><div class="ans-txt">Combinatorial NP-hard, exponential space, many local optima — the textbook GA use case. Each chromosome = job assignment permutation. Population diversity and crossover explore the space, escaping local optima that cripple hill climbing. BFS/A* are path-finding, not scheduling optimisers.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 4 — Chess-Like Game AI</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>Strategy board game: branching factor 30, game length 40 moves, 10-second time limit per move.</p>
+    <div class="case-q">How should the decision engine be designed?</div>
+    <ul class="case-opts"><li>A) Pure Minimax to depth 40</li><li>B) Alpha-Beta + iterative deepening + evaluation function</li><li>C) Genetic algorithm for move sequences</li><li>D) A* on the game tree</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">B) Alpha-Beta + iterative deepening + evaluation function</div><div class="ans-txt">Pure minimax: 30^40 ≈ 10^59 nodes — infeasible. Alpha-Beta with good ordering reduces to ~30^20. Iterative deepening searches as deep as time allows and always has a move ready. Domain evaluation function replaces terminal utilities at the cutoff. GAs don't apply to sequential game decisions.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 5 — Customer Churn Prediction</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>5,000 customers, 15 tabular features, binary label. Business team needs to understand WHICH factors drive churn to intervene.</p>
+    <div class="case-q">Which model fits data size and interpretability requirements?</div>
+    <ul class="case-opts"><li>A) CNN</li><li>B) Decision Tree or Logistic Regression</li><li>C) kNN with k=1</li><li>D) Deep neural network (10 hidden layers)</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">B) Decision Tree (or Logistic Regression)</div><div class="ans-txt">Small dataset, tabular features, critical interpretability → decision tree. Produces human-readable rules like "If usage &lt; 20 min/day AND plan=basic → 85% churn". CNNs are for images. kNN k=1 massively overfits. Deep NN is overkill and uninterpretable at this scale.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 6 — Earthquake Rescue Drone</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>Drone explores unknown building. Layout unknown in advance. Battery limits exploration to depth 15. Goal location unknown — no heuristic available.</p>
+    <div class="case-q">Which search strategy suits these constraints?</div>
+    <ul class="case-opts"><li>A) A* search</li><li>B) Depth-Limited Search (limit=15)</li><li>C) BFS</li><li>D) Simulated Annealing</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">B) Depth-Limited Search (DLS)</div><div class="ans-txt">Unknown goal → no heuristic → no A*. Battery = hard depth limit of 15 → DLS. BFS exhausts memory in a large unknown building. If depth bound uncertain, IDDFS preferred. Simulated Annealing is for optimisation, not constrained exploration.</div></div>
+  </div></div>
+
+  <div class="case"><div class="case-hdr">Case Study 7 — Neural Network Hyperparameter Tuning</div><div class="case-body">
+    <div class="case-lbl">Scenario</div><p>Optimise learning rate, batch size, layers, dropout. Objective non-differentiable w.r.t. hyperparameters. Each evaluation = 2 hours of training.</p>
+    <div class="case-q">Which optimisation approach is practical given evaluation cost?</div>
+    <ul class="case-opts"><li>A) Gradient descent on hyperparameters</li><li>B) Genetic Algorithm or Bayesian Optimisation</li><li>C) Hill climbing</li><li>D) Grid search over all combinations</li></ul>
+    <button class="reveal-btn" onclick="reveal(this)">Reveal answer ↓</button>
+    <div class="ans-box" style="display:none"><div class="ans-lbl">B) Genetic Algorithm (or Bayesian Optimisation)</div><div class="ans-txt">Non-differentiable → no gradient descent. Evaluations expensive (2h each) → minimise number of evaluations. GA searches intelligently via population crossover. Bayesian Optimisation is the modern favourite for expensive black-box functions. Grid search with 4+ continuous hyperparameters requires thousands of evaluations.</div></div>
+  </div></div>
+</div>
+
+</div><!-- content -->
+</div><!-- layout -->
+
+<script>
+var drawn = {};
+
+function show(idx, btn) {
+  for (var i = 0; i < 12; i++) {
+    document.getElementById('s'+i).style.display = i===idx ? 'block' : 'none';
+  }
+  document.querySelectorAll('.sb-item').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  document.querySelector('.content').scrollTop = 0;
+  if (!drawn[idx]) { drawn[idx]=true; setTimeout(function(){drawViz(idx);},30); }
+}
+
+function reveal(btn) {
+  btn.style.display = 'none';
+  btn.nextElementSibling.style.display = 'block';
+}
+
+function drawViz(idx) {
+  if (idx===0) drawAgents();
+  else if (idx===1) drawSSGraph();
+  else if (idx===2) drawSearchTrees();
+  else if (idx===3) drawAstar();
+  else if (idx===4) drawLandscape();
+  else if (idx===5) drawGA();
+  else if (idx===6) drawMinimax();
+  else if (idx===7) drawOverfit();
+  else if (idx===8) { drawActivation('cv-relu','ReLU',function(x){return Math.max(0,x);},'#d85a30');
+                      drawActivation('cv-sigmoid','Sigmoid',function(x){return 1/(1+Math.exp(-x));},'#534ab7');
+                      drawActivation('cv-tanh','Tanh',function(x){return Math.tanh(x);},'#1d9e75');
+                      drawActivation('cv-lrelu','Leaky ReLU',function(x){return x>0?x:0.01*x;},'#ef9f27');
+                      drawLossCurve(); }
+  else if (idx===9) { drawCNNArch(); drawConvOp(); }
+}
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+function getCtx(id) {
+  var c = document.getElementById(id);
+  if (!c) return null;
+  c.width = Math.min(540, c.parentElement ? c.parentElement.offsetWidth - 28 : 540);
+  return {ctx: c.getContext('2d'), W: c.width, H: c.height};
+}
+function bg(ctx, W, H) {
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,W,H);
+}
+
+// ─── Section 0: Agent complexity bar ──────────────────────────────────────────
+function drawAgents() {
+  var d = getCtx('cv-agents'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var agents=[
+    {name:'Simple Reflex',complexity:1,color:'#fac775'},
+    {name:'Model-Based',complexity:2,color:'#ef9f27'},
+    {name:'Goal-Based',complexity:3,color:'#d85a30'},
+    {name:'Utility-Based',complexity:4,color:'#993c1d'},
+    {name:'Learning',complexity:5,color:'#1d9e75'},
+  ];
+  var pad=40, barH=18, gap=10;
+  var maxW = W - pad - 140;
+  ctx.font='11px system-ui';
+  agents.forEach(function(a,i){
+    var y = 20 + i*(barH+gap);
+    ctx.fillStyle='#888'; ctx.textAlign='right';
+    ctx.fillText(a.name, pad-6, y+13);
+    var bw = (a.complexity/5)*maxW;
+    ctx.fillStyle='#f0ece4'; ctx.fillRect(pad,y,maxW,barH);
+    ctx.fillStyle=a.color; ctx.fillRect(pad,y,bw,barH);
+    ctx.fillStyle='#2c2c2a'; ctx.textAlign='left';
+    ctx.fillText(['Minimal','Low','Medium','High','Highest'][a.complexity-1]+' decision complexity', pad+bw+6, y+13);
+  });
+  ctx.fillStyle='#888'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('← Simpler                                                                     More Capable →', W/2+20, H-6);
+}
+
+// ─── Section 1: State space graph vs search tree ────────────────────────────
+function drawSSGraph() {
+  var d = getCtx('cv-ssgraph'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var half=W/2-10;
+  // Left: state space graph (compact, few nodes)
+  ctx.fillStyle='#412402'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('State Space Graph', half/2, 16);
+  var nodes=[{x:half/2,y:45},{x:half/2-60,y:90},{x:half/2+60,y:90},{x:half/2-80,y:135},{x:half/2-20,y:135},{x:half/2+40,y:135}];
+  var edges=[[0,1],[0,2],[1,3],[1,4],[2,4],[2,5],[3,4]];
+  ctx.strokeStyle='#fac775'; ctx.lineWidth=1.5;
+  edges.forEach(function(e){
+    ctx.beginPath(); ctx.moveTo(nodes[e[0]].x,nodes[e[0]].y); ctx.lineTo(nodes[e[1]].x,nodes[e[1]].y); ctx.stroke();
+  });
+  nodes.forEach(function(n,i){
+    ctx.beginPath(); ctx.arc(n.x,n.y,12,0,Math.PI*2);
+    ctx.fillStyle=i===0?'#ef9f27':'#faeeda'; ctx.fill();
+    ctx.strokeStyle='#fac775'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle='#412402'; ctx.font='10px system-ui'; ctx.textAlign='center';
+    ctx.fillText(String.fromCharCode(65+i), n.x, n.y+4);
+  });
+  ctx.fillStyle='#888'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Each state appears once | has cycles', half/2, H-6);
+
+  // Divider
+  ctx.strokeStyle='#e5e3dc'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(half+10,10); ctx.lineTo(half+10,H-10); ctx.stroke();
+
+  // Right: search tree (same nodes but expanded as tree, showing A repeated)
+  var ox=half+20;
+  ctx.fillStyle='#085041'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Search Tree', ox+half/2, 16);
+  var tnodes=[{x:ox+half/2,y:40,lbl:'A'},{x:ox+half/2-70,y:85,lbl:'B'},{x:ox+half/2+50,y:85,lbl:'C'},{x:ox+half/2-90,y:130,lbl:'D'},{x:ox+half/2-40,y:130,lbl:'E'},{x:ox+half/2+30,y:130,lbl:'E'},{x:ox+half/2+70,y:130,lbl:'F'}];
+  var tedges=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
+  ctx.strokeStyle='#5dcaa5'; ctx.lineWidth=1.5;
+  tedges.forEach(function(e){
+    ctx.beginPath(); ctx.moveTo(tnodes[e[0]].x,tnodes[e[0]].y); ctx.lineTo(tnodes[e[1]].x,tnodes[e[1]].y); ctx.stroke();
+  });
+  tnodes.forEach(function(n,i){
+    ctx.beginPath(); ctx.arc(n.x,n.y,12,0,Math.PI*2);
+    var dup=n.lbl==='E'&&i===5;
+    ctx.fillStyle=i===0?'#1d9e75':(dup?'#fcebeb':'#e1f5ee'); ctx.fill();
+    ctx.strokeStyle=dup?'#f09595':'#5dcaa5'; ctx.lineWidth=dup?2:1.5; ctx.stroke();
+    ctx.fillStyle=dup?'#791f1f':'#04342c'; ctx.font='10px system-ui'; ctx.textAlign='center';
+    ctx.fillText(n.lbl, n.x, n.y+4);
+  });
+  ctx.fillStyle='#791f1f'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('State E appears twice!', ox+half/2, H-6);
+}
+
+// ─── Section 2: BFS vs DFS ────────────────────────────────────────────────
+function drawSearchTrees() {
+  var d = getCtx('cv-search'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var half=W/2-10;
+  function drawTree(ox, orders, title, nodeColor, orderColor) {
+    ctx.fillStyle='#412402'; ctx.font='11px system-ui'; ctx.textAlign='center';
+    ctx.fillText(title, ox+half/2, 14);
+    var positions=[
+      {x:ox+half/2, y:40},
+      {x:ox+half/2-65, y:85}, {x:ox+half/2+65, y:85},
+      {x:ox+half/2-90, y:135}, {x:ox+half/2-40, y:135},
+      {x:ox+half/2+40, y:135}, {x:ox+half/2+90, y:135}
+    ];
+    var edges=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
+    ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=1.5;
+    edges.forEach(function(e){
+      ctx.beginPath(); ctx.moveTo(positions[e[0]].x,positions[e[0]].y); ctx.lineTo(positions[e[1]].x,positions[e[1]].y); ctx.stroke();
+    });
+    positions.forEach(function(p,i){
+      ctx.beginPath(); ctx.arc(p.x,p.y,18,0,Math.PI*2);
+      ctx.fillStyle=nodeColor; ctx.fill();
+      ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#2c2c2a'; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+      ctx.fillText(orders[i], p.x, p.y+4);
+    });
+    // Level labels
+    ctx.fillStyle='#888'; ctx.font='10px system-ui'; ctx.textAlign='left';
+    ctx.fillText('Level 0', ox+4, 44); ctx.fillText('Level 1', ox+4, 89); ctx.fillText('Level 2', ox+4, 139);
+    // Strategy label
+    ctx.fillStyle=orderColor; ctx.font='10px system-ui'; ctx.textAlign='center';
+    var desc = title.includes('BFS') ? 'Expands level by level → optimal, memory-heavy' : 'Dives deep first → fast, not optimal';
+    ctx.fillText(desc, ox+half/2, H-6);
+  }
+  drawTree(0, [1,2,3,4,5,6,7], 'BFS — expansion order', '#faeeda', '#854f0b');
+  ctx.strokeStyle='#e5e3dc'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(half+10,10); ctx.lineTo(half+10,H-10); ctx.stroke();
+  drawTree(half+20, [1,2,4,5,3,6,7], 'DFS — expansion order', '#e1f5ee', '#0f6e56');
+}
+
+// ─── Section 3: A* grid ───────────────────────────────────────────────────
+function drawAstar() {
+  var d = getCtx('cv-astar'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var cols=11, rows=7, cellW=Math.floor((W-80)/cols), cellH=Math.floor((H-20)/rows);
+  var ox=40, oy=10;
+  var start={r:3,c:0}, goal={r:3,c:10};
+  var wall=[[1,3],[2,3],[3,3],[4,3],[5,3],[1,7],[2,7],[3,7],[4,7]];
+  function isWall(r,c){return wall.some(function(w){return w[0]===r&&w[1]===c;});}
+  // expanded cells (those A* would explore)
+  var expanded=[[3,1],[2,1],[4,1],[3,2],[2,2],[4,2],[1,2],[5,2],[1,1],[5,1],[1,4],[2,4],[3,4],[4,4],[5,4],[2,5],[3,5],[4,5],[3,6],[3,7],[3,8],[3,9]];
+  var path=[[3,0],[3,1],[3,2],[2,2],[2,4],[2,5],[3,5],[3,6],[3,7],[3,8],[3,9],[3,10]];
+  for(var r=0;r<rows;r++){
+    for(var c=0;c<cols;c++){
+      var x=ox+c*cellW, y=oy+r*cellH;
+      if(isWall(r,c)){ctx.fillStyle='#2c2c2a';}
+      else if(r===start.r&&c===start.c){ctx.fillStyle='#1d9e75';}
+      else if(r===goal.r&&c===goal.c){ctx.fillStyle='#d85a30';}
+      else if(path.some(function(p){return p[0]===r&&p[1]===c;})){ctx.fillStyle='#fac775';}
+      else if(expanded.some(function(e){return e[0]===r&&e[1]===c;})){ctx.fillStyle='#faeeda';}
+      else{ctx.fillStyle='#f0ece4';}
+      ctx.fillRect(x+1,y+1,cellW-2,cellH-2);
+    }
+  }
+  // Legend
+  var lx=ox+cols*cellW+8, ly=oy+10;
+  var items=[['Start',  '#1d9e75'],['Goal','#d85a30'],['Path','#fac775'],['Explored','#faeeda'],['Wall','#2c2c2a'],['Unexplored','#f0ece4']];
+  items.forEach(function(item,i){
+    ctx.fillStyle=item[1]; ctx.fillRect(lx,ly+i*22,14,14);
+    ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=0.5; ctx.strokeRect(lx,ly+i*22,14,14);
+    ctx.fillStyle='#444'; ctx.font='10px system-ui'; ctx.textAlign='left';
+    ctx.fillText(item[0], lx+17, ly+i*22+11);
+  });
+}
+
+// ─── Section 4: Optimization landscape ───────────────────────────────────
+function drawLandscape() {
+  var d = getCtx('cv-landscape'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var pad={l:30,r:20,t:30,b:40};
+  var w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  function f(x){return Math.sin(1.2*x)*0.4+Math.sin(2.5*x)*0.25+Math.cos(0.8*x)*0.3+0.05*Math.sin(7*x);}
+  var xMin=-0.5, xMax=6.5;
+  function toX(x){return pad.l+(x-xMin)/(xMax-xMin)*w;}
+  function toY(y){return pad.t+(1-(y+0.85)/1.9)*h;}
+  // fill under curve
+  ctx.fillStyle='#faeeda88';
+  ctx.beginPath(); ctx.moveTo(toX(xMin),toY(f(xMin)));
+  for(var i=0;i<=200;i++){var x=xMin+i*(xMax-xMin)/200; ctx.lineTo(toX(x),toY(f(x)));}
+  ctx.lineTo(toX(xMax),toY(-0.85)); ctx.lineTo(toX(xMin),toY(-0.85)); ctx.closePath(); ctx.fill();
+  // curve
+  ctx.strokeStyle='#ef9f27'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  for(var i=0;i<=200;i++){var x=xMin+i*(xMax-xMin)/200; var y=f(x); if(i===0)ctx.moveTo(toX(x),toY(y)); else ctx.lineTo(toX(x),toY(y));}
+  ctx.stroke();
+  // x axis
+  ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,toY(-0.85)); ctx.lineTo(pad.l+w,toY(-0.85)); ctx.stroke();
+  // local optima
+  var localOptima=[{x:1.0,label:'Local max'},{x:3.3,label:'Local max'},{x:5.1,label:'Local max'}];
+  var globalOpt={x:5.1};
+  localOptima.forEach(function(lo){
+    var gx=toX(lo.x), gy=toY(f(lo.x));
+    ctx.beginPath(); ctx.arc(gx,gy,5,0,Math.PI*2);
+    var isGlobal=lo.x===globalOpt.x;
+    ctx.fillStyle=isGlobal?'#1d9e75':'#d85a30'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=isGlobal?'#085041':'#791f1f';
+    ctx.font='10px system-ui'; ctx.textAlign='center';
+    ctx.fillText(isGlobal?'Global max':lo.label, gx, gy-10);
+  });
+  // Hill climbing arrow (gets stuck)
+  var hcPath=[0.3,0.6,0.9,1.0];
+  ctx.strokeStyle='#d85a30'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  hcPath.forEach(function(x,i){if(i===0)ctx.moveTo(toX(x),toY(f(x)));else ctx.lineTo(toX(x),toY(f(x)));});
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#d85a30'; ctx.font='bold 10px system-ui'; ctx.textAlign='left';
+  ctx.fillText('Hill climbing gets stuck here →', pad.l+4, pad.t+14);
+  // SA path (jumps over)
+  var saPath=[0.3,0.6,1.0,1.2,1.5,2.0,2.5,3.0,3.3,3.6,4.2,4.8,5.1];
+  ctx.strokeStyle='#1d9e75'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  saPath.forEach(function(x,i){if(i===0)ctx.moveTo(toX(x),toY(f(x)));else ctx.lineTo(toX(x),toY(f(x)));});
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#085041'; ctx.font='bold 10px system-ui'; ctx.textAlign='right';
+  ctx.fillText('Simulated annealing escapes and finds global max', pad.l+w-4, pad.t+14);
+  ctx.fillStyle='#888'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('x (solution space)', pad.l+w/2, H-6);
+  ctx.save(); ctx.translate(12, pad.t+h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('f(x) objective', 0, 0); ctx.restore();
+}
+
+// ─── Section 5: GA convergence ────────────────────────────────────────────
+function drawGA() {
+  var d = getCtx('cv-ga'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var pad={l:40,r:20,t:25,b:35};
+  var w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  var gens=50;
+  var best=[], avg=[];
+  var b=20, a=10;
+  for(var i=0;i<gens;i++){
+    b = b + (95-b)*(0.08+Math.random()*0.04);
+    a = a + (b*0.85-a)*(0.1+Math.random()*0.05);
+    best.push(Math.min(98,b));
+    avg.push(Math.min(85,a));
+  }
+  function toX(i){return pad.l+i/gens*w;}
+  function toY(v){return pad.t+(1-v/100)*h;}
+  // grid
+  ctx.strokeStyle='#e8e6e0'; ctx.lineWidth=0.5;
+  [0,25,50,75,100].forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(pad.l,toY(v)); ctx.lineTo(pad.l+w,toY(v)); ctx.stroke();
+    ctx.fillStyle='#aaa'; ctx.font='10px system-ui'; ctx.textAlign='right';
+    ctx.fillText(v+'%', pad.l-4, toY(v)+4);
+  });
+  // avg
+  ctx.strokeStyle='#fac775'; ctx.lineWidth=2;
+  ctx.beginPath();
+  avg.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v));else ctx.lineTo(toX(i),toY(v));});
+  ctx.stroke();
+  // best
+  ctx.strokeStyle='#1d9e75'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  best.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v));else ctx.lineTo(toX(i),toY(v));});
+  ctx.stroke();
+  // axes labels
+  ctx.fillStyle='#444'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Generation', pad.l+w/2, H-4);
+  ctx.save(); ctx.translate(12, pad.t+h/2); ctx.rotate(-Math.PI/2); ctx.fillText('Fitness %', 0,0); ctx.restore();
+  // legend
+  ctx.fillStyle='#1d9e75'; ctx.fillRect(pad.l+6,pad.t+6,20,3);
+  ctx.fillStyle='#085041'; ctx.font='10px system-ui'; ctx.textAlign='left'; ctx.fillText('Best individual',pad.l+30,pad.t+10);
+  ctx.fillStyle='#fac775'; ctx.fillRect(pad.l+6,pad.t+18,20,3);
+  ctx.fillStyle='#854f0b'; ctx.fillText('Population average',pad.l+30,pad.t+22);
+}
+
+// ─── Section 6: Minimax tree ─────────────────────────────────────────────
+function drawMinimax() {
+  var d = getCtx('cv-minimax'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var nodes = [
+    {x:W/2, y:30, val:3, type:'MAX', pruned:false},
+    {x:W/2-160, y:80, val:3, type:'MIN', pruned:false},
+    {x:W/2, y:80, val:2, type:'MIN', pruned:false},
+    {x:W/2+160, y:80, val:2, type:'MIN', pruned:false},
+    {x:W/2-230, y:145, val:3, type:'LEAF', pruned:false},
+    {x:W/2-160, y:145, val:12, type:'LEAF', pruned:false},
+    {x:W/2-90, y:145, val:8, type:'LEAF', pruned:false},
+    {x:W/2-30, y:145, val:2, type:'LEAF', pruned:false},
+    {x:W/2+30, y:145, val:4, type:'LEAF', pruned:true},
+    {x:W/2+90, y:145, val:6, type:'LEAF', pruned:true},
+    {x:W/2+130, y:145, val:14, type:'LEAF', pruned:false},
+    {x:W/2+190, y:145, val:5, type:'LEAF', pruned:false},
+    {x:W/2+230, y:145, val:2, type:'LEAF', pruned:true},
+  ];
+  var edges=[[0,1],[0,2],[0,3],[1,4],[1,5],[2,6],[2,7],[3,8],[3,9],[3,10],[3,11]];
+  edges.forEach(function(e){
+    var a=nodes[e[0]], b=nodes[e[1]];
+    ctx.strokeStyle=b.pruned?'#f09595':'#d5d3cc';
+    ctx.lineWidth=b.pruned?1:1.5; ctx.setLineDash(b.pruned?[4,3]:[]);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y+16); ctx.lineTo(b.x,b.y-16); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+  nodes.forEach(function(n){
+    if(n.pruned){ ctx.beginPath(); ctx.arc(n.x,n.y,14,0,Math.PI*2); ctx.fillStyle='#f8f7f4'; ctx.fill(); ctx.strokeStyle='#f09595'; ctx.lineWidth=1; ctx.stroke(); ctx.fillStyle='#f09595'; ctx.font='10px system-ui'; ctx.textAlign='center'; ctx.fillText('✗',n.x,n.y+4); return; }
+    if(n.type==='MAX'){ ctx.beginPath(); ctx.moveTo(n.x,n.y-16); ctx.lineTo(n.x+16,n.y+12); ctx.lineTo(n.x-16,n.y+12); ctx.closePath(); ctx.fillStyle='#faeeda'; ctx.fill(); ctx.strokeStyle='#ef9f27'; ctx.lineWidth=2; ctx.stroke(); }
+    else if(n.type==='MIN'){ ctx.beginPath(); ctx.moveTo(n.x,n.y+16); ctx.lineTo(n.x+16,n.y-12); ctx.lineTo(n.x-16,n.y-12); ctx.closePath(); ctx.fillStyle='#e1f5ee'; ctx.fill(); ctx.strokeStyle='#1d9e75'; ctx.lineWidth=2; ctx.stroke(); }
+    else{ ctx.beginPath(); ctx.rect(n.x-14,n.y-14,28,28); ctx.fillStyle='#f0ece4'; ctx.fill(); ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=1.5; ctx.stroke(); }
+    ctx.fillStyle='#2c2c2a'; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+    ctx.fillText(n.val, n.x, n.y+5);
+  });
+  // Legend
+  ctx.fillStyle='#854f0b'; ctx.font='10px system-ui'; ctx.textAlign='left';
+  ctx.fillText('▲ MAX node   ▽ MIN node   □ terminal value   ✗ pruned by alpha-beta (never evaluated)', 8, H-8);
+}
+
+// ─── Section 7: Overfitting curves ───────────────────────────────────────
+function drawOverfit() {
+  var d = getCtx('cv-overfit'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var pad={l:45,r:120,t:25,b:40};
+  var w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  var n=80;
+  function toX(i){return pad.l+i/n*w;}
+  function toY(v,vmin,vmax){return pad.t+(1-(v-vmin)/(vmax-vmin))*h;}
+  var trainErr=[], valErr=[];
+  for(var i=0;i<=n;i++){
+    var t=i/n;
+    trainErr.push(0.9*Math.exp(-3.5*t)+0.05);
+    valErr.push(0.8*Math.exp(-2.5*t)+0.15+0.5*Math.max(0,t-0.45)*(t-0.45));
+  }
+  // grid
+  ctx.strokeStyle='#e8e6e0'; ctx.lineWidth=0.5;
+  [0,0.2,0.4,0.6,0.8,1.0].forEach(function(v){
+    ctx.beginPath(); ctx.moveTo(pad.l,toY(v,0,1)); ctx.lineTo(pad.l+w,toY(v,0,1)); ctx.stroke();
+    ctx.fillStyle='#aaa'; ctx.font='10px system-ui'; ctx.textAlign='right'; ctx.fillText(v.toFixed(1),pad.l-4,toY(v,0,1)+4);
+  });
+  // sweet spot line
+  var sweetSpot=0.45;
+  ctx.strokeStyle='#534ab7'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(toX(sweetSpot*n),pad.t); ctx.lineTo(toX(sweetSpot*n),pad.t+h); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#534ab7'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('sweet spot', toX(sweetSpot*n), pad.t-6);
+  // train
+  ctx.strokeStyle='#1d9e75'; ctx.lineWidth=2.5;
+  ctx.beginPath(); trainErr.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v,0,1));else ctx.lineTo(toX(i),toY(v,0,1));}); ctx.stroke();
+  // val
+  ctx.strokeStyle='#d85a30'; ctx.lineWidth=2.5;
+  ctx.beginPath(); valErr.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v,0,1));else ctx.lineTo(toX(i),toY(v,0,1));}); ctx.stroke();
+  // zone labels
+  ctx.fillStyle='#412402'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('← Underfitting', toX(sweetSpot*n/2), pad.t+h-8);
+  ctx.fillText('Overfitting →', toX(sweetSpot*n+((1-sweetSpot)*n)/2), pad.t+h-8);
+  // legend
+  var lx=pad.l+w+8;
+  ctx.fillStyle='#1d9e75'; ctx.fillRect(lx,pad.t+20,20,3);
+  ctx.fillStyle='#085041'; ctx.font='11px system-ui'; ctx.textAlign='left'; ctx.fillText('Training error',lx+24,pad.t+24);
+  ctx.fillStyle='#d85a30'; ctx.fillRect(lx,pad.t+40,20,3);
+  ctx.fillStyle='#993c1d'; ctx.fillText('Validation error',lx+24,pad.t+44);
+  // axes
+  ctx.fillStyle='#444'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Model complexity / training iterations', pad.l+w/2, H-4);
+  ctx.save(); ctx.translate(12, pad.t+h/2); ctx.rotate(-Math.PI/2); ctx.fillText('Error', 0,0); ctx.restore();
+}
+
+// ─── Section 8: Activation functions ─────────────────────────────────────
+function drawActivation(id, title, fn, color) {
+  var c=document.getElementById(id); if(!c) return;
+  var ctx=c.getContext('2d'), W=c.width, H=c.height;
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,W,H);
+  var pad={l:30,r:10,t:22,b:22};
+  var w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  var xMin=-4, xMax=4, yMin=-1.6, yMax=1.6;
+  if(title==='ReLU'||title==='Leaky ReLU'){yMin=-0.5; yMax=4.5;}
+  if(title==='Sigmoid'){yMin=-0.2; yMax=1.2;}
+  function tx(x){return pad.l+(x-xMin)/(xMax-xMin)*w;}
+  function ty(y){return pad.t+(1-(y-yMin)/(yMax-yMin))*h;}
+  // title
+  ctx.fillStyle=color; ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.fillText(title, W/2, 14);
+  // grid
+  ctx.strokeStyle='#e8e6e0'; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(pad.l,ty(0)); ctx.lineTo(pad.l+w,ty(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx(0),pad.t); ctx.lineTo(tx(0),pad.t+h); ctx.stroke();
+  // axis ticks
+  ctx.fillStyle='#aaa'; ctx.font='9px system-ui';
+  [-4,-2,0,2,4].forEach(function(v){
+    ctx.textAlign='center'; ctx.fillText(v, tx(v), ty(yMin)-4);
+  });
+  // curve
+  ctx.strokeStyle=color; ctx.lineWidth=2;
+  ctx.beginPath();
+  for(var i=0;i<=200;i++){
+    var x=xMin+i*(xMax-xMin)/200;
+    var y=fn(x);
+    y=Math.max(yMin,Math.min(yMax,y));
+    if(i===0)ctx.moveTo(tx(x),ty(y)); else ctx.lineTo(tx(x),ty(y));
+  }
+  ctx.stroke();
+  // y-axis bounds
+  ctx.fillStyle='#888'; ctx.font='9px system-ui'; ctx.textAlign='right';
+  ctx.fillText(yMax.toFixed(0), pad.l-2, pad.t+8);
+  ctx.fillText(yMin.toFixed(0), pad.l-2, pad.t+h-2);
+}
+
+// ─── Section 8: Loss curve ────────────────────────────────────────────────
+function drawLossCurve() {
+  var d=getCtx('cv-loss'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var pad={l:40,r:20,t:20,b:30};
+  var w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  var n=100, losses=[];
+  for(var i=0;i<=n;i++){
+    losses.push(2.3*Math.exp(-0.04*i)+0.15+0.04*Math.sin(i*0.8)*(1-i/n));
+  }
+  function tx(i){return pad.l+i/n*w;}
+  function ty(v){return pad.t+(1-(v-0)/(2.5-0))*h;}
+  [0,0.5,1.0,1.5,2.0,2.5].forEach(function(v){
+    ctx.strokeStyle='#e8e6e0'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(pad.l,ty(v)); ctx.lineTo(pad.l+w,ty(v)); ctx.stroke();
+    ctx.fillStyle='#aaa'; ctx.font='9px system-ui'; ctx.textAlign='right'; ctx.fillText(v.toFixed(1),pad.l-3,ty(v)+4);
+  });
+  ctx.strokeStyle='#ef9f27'; ctx.lineWidth=2.5;
+  ctx.beginPath(); losses.forEach(function(v,i){if(i===0)ctx.moveTo(tx(i),ty(v));else ctx.lineTo(tx(i),ty(v));}); ctx.stroke();
+  ctx.fillStyle='#444'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Epoch', pad.l+w/2, H-2);
+  ctx.save(); ctx.translate(12, pad.t+h/2); ctx.rotate(-Math.PI/2); ctx.fillStyle='#444'; ctx.fillText('Loss', 0,0); ctx.restore();
+  ctx.fillStyle='#854f0b'; ctx.font='10px system-ui'; ctx.textAlign='left';
+  ctx.fillText('Loss converges as weights are updated via backprop', pad.l+4, pad.t+14);
+}
+
+// ─── Section 9: CNN architecture ─────────────────────────────────────────
+function drawCNNArch() {
+  var d=getCtx('cv-cnn'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var layers=[
+    {name:'Input\n224×224×3',w:36,h:90,color:'#faeeda',stroke:'#fac775'},
+    {name:'Conv\n112×112×32',w:28,h:75,color:'#e1f5ee',stroke:'#5dcaa5'},
+    {name:'Pool\n56×56×32',w:20,h:60,color:'#e1f5ee',stroke:'#5dcaa5'},
+    {name:'Conv\n28×28×64',w:28,h:75,color:'#eeedfe',stroke:'#afa9ec'},
+    {name:'Pool\n14×14×64',w:20,h:60,color:'#eeedfe',stroke:'#afa9ec'},
+    {name:'Flatten\n12544',w:10,h:90,color:'#faeeda',stroke:'#fac775'},
+    {name:'FC\n256',w:18,h:50,color:'#fcebeb',stroke:'#f09595'},
+    {name:'Output\n10 classes',w:18,h:35,color:'#eaf3de',stroke:'#c0dd97'},
+  ];
+  var totalW = layers.reduce(function(s,l){return s+l.w+14;},0)-14;
+  var startX = (W-totalW)/2;
+  var cy = H/2;
+  var x = startX;
+  layers.forEach(function(l,i){
+    var y = cy - l.h/2;
+    ctx.fillStyle=l.color; ctx.fillRect(x,y,l.w,l.h);
+    ctx.strokeStyle=l.stroke; ctx.lineWidth=1.5; ctx.strokeRect(x,y,l.w,l.h);
+    // Label below
+    var lines=l.name.split('\n');
+    ctx.fillStyle='#2c2c2a'; ctx.font='9.5px system-ui'; ctx.textAlign='center';
+    ctx.fillText(lines[0], x+l.w/2, y+l.h+13);
+    ctx.fillStyle='#888'; ctx.font='9px system-ui';
+    ctx.fillText(lines[1], x+l.w/2, y+l.h+23);
+    if(i<layers.length-1){
+      var nx=x+l.w+14;
+      ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x+l.w+2,cy); ctx.lineTo(nx-2,cy);
+      ctx.moveTo(nx-6,cy-4); ctx.lineTo(nx-2,cy); ctx.lineTo(nx-6,cy+4);
+      ctx.stroke();
+    }
+    x += l.w+14;
+  });
+}
+
+// ─── Section 9: Convolution operation ───────────────────────────────────
+function drawConvOp() {
+  var d=getCtx('cv-conv'); if(!d) return;
+  var ctx=d.ctx, W=d.W, H=d.H;
+  bg(ctx,W,H);
+  var inputGrid=[[1,0,1,0,1],[0,1,0,1,0],[1,1,0,0,1],[0,0,1,1,0],[1,0,1,0,1]];
+  var kernel=[[1,0,1],[0,1,0],[1,0,1]];
+  var output=[[4,2,4],[2,3,2],[4,2,4]];
+  var cs=32, ox=20, oy=40;
+  // Draw input
+  ctx.fillStyle='#412402'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Input (5×5)', ox+5*cs/2, oy-12);
+  inputGrid.forEach(function(row,r){
+    row.forEach(function(v,c){
+      var x=ox+c*cs, y=oy+r*cs;
+      ctx.fillStyle=v?'#fac775':'#f0ece4'; ctx.fillRect(x+1,y+1,cs-2,cs-2);
+      ctx.strokeStyle='#d5d3cc'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,cs,cs);
+      ctx.fillStyle='#2c2c2a'; ctx.font='11px system-ui'; ctx.textAlign='center'; ctx.fillText(v,x+cs/2,y+cs/2+4);
+    });
+  });
+  // Highlight the 3x3 filter region on input
+  ctx.strokeStyle='#d85a30'; ctx.lineWidth=2.5;
+  ctx.strokeRect(ox+1,oy+1,3*cs-2,3*cs-2);
+  ctx.fillStyle='#d85a30'; ctx.font='9px system-ui'; ctx.textAlign='center';
+  ctx.fillText('filter region', ox+3*cs/2, oy+3*cs+14);
+  // Draw kernel
+  var kox=ox+5*cs+30, koy=oy+cs;
+  ctx.fillStyle='#085041'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Filter (3×3)', kox+3*cs/2, koy-12);
+  kernel.forEach(function(row,r){
+    row.forEach(function(v,c){
+      var x=kox+c*cs, y=koy+r*cs;
+      ctx.fillStyle=v?'#9fe1cb':'#e1f5ee'; ctx.fillRect(x+1,y+1,cs-2,cs-2);
+      ctx.strokeStyle='#5dcaa5'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,cs,cs);
+      ctx.fillStyle='#04342c'; ctx.font='11px system-ui'; ctx.textAlign='center'; ctx.fillText(v,x+cs/2,y+cs/2+4);
+    });
+  });
+  // Arrow
+  var ax=kox+3*cs+20;
+  ctx.fillStyle='#ef9f27'; ctx.font='20px system-ui'; ctx.textAlign='left';
+  ctx.fillText('→', ax, H/2+8);
+  ctx.fillStyle='#854f0b'; ctx.font='9px system-ui'; ctx.textAlign='center';
+  ctx.fillText('dot', ax+14, H/2+20);
+  ctx.fillText('product', ax+14, H/2+30);
+  // Draw output
+  var oox=ax+40, ooy=oy+cs;
+  ctx.fillStyle='#501313'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Feature Map (3×3)', oox+3*cs/2, ooy-12);
+  output.forEach(function(row,r){
+    row.forEach(function(v,c){
+      var x=oox+c*cs, y=ooy+r*cs;
+      var intensity=v/5;
+      ctx.fillStyle='rgba(208,90,48,'+intensity+')';
+      ctx.fillRect(x+1,y+1,cs-2,cs-2);
+      ctx.strokeStyle='#f09595'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,cs,cs);
+      ctx.fillStyle='#501313'; ctx.font='11px system-ui'; ctx.textAlign='center'; ctx.fillText(v,x+cs/2,y+cs/2+4);
+    });
+  });
+  ctx.fillStyle='#888'; ctx.font='10px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Higher value = feature was present', oox+3*cs/2, ooy+3*cs+14);
+  ctx.fillStyle='#888'; ctx.font='9.5px system-ui';
+  ctx.fillText('Weight sharing: same filter slides across all positions', W/2, H-4);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+setTimeout(function(){drawn[0]=true; drawViz(0);}, 80);
+</script>

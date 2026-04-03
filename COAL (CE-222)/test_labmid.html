@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verilog Quiz — Terminal Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #00FF41;
+  --green2: #00C832;
+  --green-dim: #00802A;
+  --green-faint: rgba(0,255,65,0.07);
+  --green-faint2: rgba(0,255,65,0.13);
+  --amber: #FFB300;
+  --amber-dim: #7A5500;
+  --coral: #FF4F4F;
+  --coral-dim: #7A1A1A;
+  --teal: #00E5CC;
+  --bg: #050A05;
+  --bg2: #0A110A;
+  --bg3: #0F1A0F;
+  --bg4: #162216;
+  --border: #1A2E1A;
+  --border2: #264026;
+  --text: #B0D4B0;
+  --text-dim: #5A7A5A;
+  --text-dimmer: #2A402A;
+  --correct: #00FF41;
+  --wrong: #FF4F4F;
+  --partial: #FFB300;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  /* CRT scanlines */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+}
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--green-dim);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--amber); }
+.blink { animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.score-bar {
+  margin-left: auto;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 12px;
+}
+.score-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.score-label { color: var(--text-dim); font-size: 10px; }
+.score-val { font-size: 18px; font-weight: 700; color: var(--green); text-shadow: 0 0 10px var(--green); }
+.score-val.amber { color: var(--amber); text-shadow: 0 0 10px var(--amber); }
+
+/* SECTION NAV */
+.sec-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border2);
+  background: var(--bg2);
+  padding: 0 40px;
+  overflow-x: auto;
+}
+.sec-tab {
+  background: none;
+  border: none;
+  padding: 14px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.sec-tab:hover { color: var(--green); }
+.sec-tab.active { color: var(--green); border-bottom-color: var(--green); background: var(--green-faint); }
+
+/* MAIN */
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+
+.section-view { display: none; }
+.section-view.active { display: block; }
+
+/* SECTION HEADER */
+.sec-head {
+  margin-bottom: 36px;
+  padding: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--green);
+}
+.sec-head h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 15px rgba(0,255,65,0.4);
+}
+.sec-head p { color: var(--text-dim); font-size: 13px; margin-top: 8px; }
+
+/* QUESTION CARD */
+.q-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 28px;
+  margin-bottom: 20px;
+  transition: border-color 0.3s;
+  position: relative;
+}
+.q-card:hover { border-color: var(--green-dim); }
+.q-num {
+  font-size: 10px;
+  color: var(--text-dimmer);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.q-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: var(--green-faint);
+  color: var(--green-dim);
+  border: 1px solid var(--green-dim);
+}
+.q-tag.amber { background: rgba(255,179,0,0.08); color: var(--amber-dim); border-color: var(--amber-dim); }
+.q-tag.coral { background: rgba(255,79,79,0.08); color: var(--coral-dim); border-color: var(--coral-dim); }
+
+.q-text {
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.q-text code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--bg3);
+  color: var(--green);
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+}
+
+/* MCQ OPTIONS */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.opt-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 12px 16px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--green); color: var(--green); background: var(--green-faint); }
+.opt-btn .opt-key {
+  color: var(--green-dim);
+  font-weight: 700;
+  min-width: 16px;
+}
+.opt-btn.correct { border-color: var(--correct); color: var(--correct); background: rgba(0,255,65,0.08); }
+.opt-btn.wrong { border-color: var(--wrong); color: var(--wrong); background: rgba(255,79,79,0.08); }
+.opt-btn.revealed { border-color: var(--correct); color: var(--correct); background: rgba(0,255,65,0.05); }
+.opt-btn:disabled { cursor: default; }
+
+/* FILL IN THE BLANK */
+.fill-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.fill-input {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 10px 14px;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  flex: 1;
+  min-width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.fill-input:focus { border-color: var(--green); }
+.fill-input.correct { border-color: var(--correct); background: rgba(0,255,65,0.06); }
+.fill-input.wrong { border-color: var(--wrong); }
+.fill-input.revealed { border-color: var(--green-dim); color: var(--green); }
+
+/* CODE CHALLENGE */
+.code-prompt {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-dim);
+  border-left: 2px solid var(--amber);
+}
+.code-prompt strong { color: var(--amber); }
+
+.code-area {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 16px;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  min-height: 180px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+  tab-size: 4;
+}
+.code-area:focus { border-color: var(--green-dim); }
+.code-area.boss { min-height: 320px; }
+
+/* REVEAL ANSWER */
+.answer-box {
+  display: none;
+  background: var(--bg);
+  border: 1px solid var(--green-dim);
+  border-radius: 3px;
+  padding: 20px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.answer-box.show { display: block; }
+.answer-box pre {
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+}
+.answer-box .ans-label {
+  font-size: 10px;
+  color: var(--green-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.ans-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+}
+.answer-box .annotation {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border2);
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.annotation strong { color: var(--amber); }
+.annotation code {
+  background: var(--bg3);
+  color: var(--green);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+/* SYNTAX HIGHLIGHT in answers */
+.kw { color: #FF79C6; }
+.ty { color: var(--teal); }
+.mo { color: var(--amber); }
+.nu { color: #BD93F9; }
+.cm { color: var(--text-dimmer); font-style: italic; }
+.st { color: #F1FA8C; }
+.sy { color: #8BE9FD; }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 9px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-check { border-color: var(--green-dim); color: var(--green); }
+.btn-check:hover { background: var(--green-faint); }
+.btn-reveal { border-color: var(--amber-dim); color: var(--amber); }
+.btn-reveal:hover { background: rgba(255,179,0,0.08); }
+.btn-reset { border-color: var(--text-dimmer); color: var(--text-dim); }
+.btn-reset:hover { border-color: var(--coral-dim); color: var(--coral); }
+
+/* FEEDBACK */
+.feedback {
+  font-size: 12px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  display: none;
+}
+.feedback.show { display: block; }
+.feedback.correct { color: var(--correct); background: rgba(0,255,65,0.06); border: 1px solid rgba(0,255,65,0.2); }
+.feedback.wrong { color: var(--coral); background: rgba(255,79,79,0.06); border: 1px solid rgba(255,79,79,0.2); }
+
+/* PROGRESS BAR */
+.progress-wrap { margin-bottom: 28px; }
+.progress-label { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s; box-shadow: 0 0 8px var(--green); }
+
+/* BOSS card */
+.boss-card { border-color: var(--amber); background: rgba(255,179,0,0.03); }
+.boss-badge {
+  font-size: 10px;
+  color: var(--amber);
+  border: 1px solid var(--amber-dim);
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: rgba(255,179,0,0.08);
+}
+
+/* FINAL SCORE */
+#final-score {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+}
+#final-score h2 { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--green); text-shadow: 0 0 30px var(--green); }
+#final-score .big-num { font-size: 72px; font-weight: 800; color: var(--green); text-shadow: 0 0 40px var(--green); line-height: 1; margin: 20px 0; }
+#final-score p { color: var(--text-dim); font-size: 14px; margin-top: 10px; }
+
+/* CALLOUT */
+.callout {
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 14px 0;
+  font-size: 13px;
+  border-left: 3px solid;
+}
+.callout-g { background: var(--green-faint); border-color: var(--green-dim); color: var(--text); }
+.callout-a { background: rgba(255,179,0,0.06); border-color: var(--amber-dim); color: var(--text-dim); }
+
+@media (max-width: 640px) {
+  header { padding: 14px 16px; flex-wrap: wrap; }
+  .sec-nav { padding: 0 8px; }
+  .container { padding: 24px 12px; }
+  .q-card { padding: 18px; }
+  .sec-tab { padding: 12px 14px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">VERILOG<span>QUIZ</span> <span class="blink">█</span></div>
+    <div style="font-size:11px; color:var(--text-dim); margin-top:3px;">syntax · conceptual · code challenges</div>
+  </div>
+  <div class="score-bar">
+    <div class="score-item">
+      <div class="score-val" id="hdr-syntax">0</div>
+      <div class="score-label">SYNTAX</div>
+    </div>
+    <div class="score-item">
+      <div class="score-val amber" id="hdr-concept">0</div>
+      <div class="score-label">CONCEPT</div>
+    </div>
+    <div class="score-item">
+      <div class="score-val" id="hdr-total">0/30</div>
+      <div class="score-label">TOTAL</div>
+    </div>
+  </div>
+</header>
+
+<div class="sec-nav">
+  <button class="sec-tab active" onclick="showSection('syntax', this)">A · Syntax</button>
+  <button class="sec-tab" onclick="showSection('concept', this)">B · Conceptual</button>
+  <button class="sec-tab" onclick="showSection('code', this)">C · Code Challenges</button>
+  <button class="sec-tab" onclick="showSection('multi', this)">D · Multi-Testbench</button>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════ SECTION A: SYNTAX ═══════════════════ -->
+<div id="sec-syntax" class="section-view active">
+  <div class="sec-head">
+    <h2>// Section A: Syntax Recall</h2>
+    <p>10 questions. No peeking at your notes. If you don't know it cold, you'll lose marks in the exam.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progress</span><span id="syn-prog-txt">0 / 10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="syn-prog" style="width:0%"></div></div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="q-card" id="sq1">
+    <div class="q-num"><span>SYNTAX · Q01</span><span class="q-tag">fill-in</span></div>
+    <div class="q-text">Every Verilog design unit starts with the keyword <code>_______</code> and must end with <code>_______</code>.</div>
+    <div class="fill-row">
+      <input class="fill-input" id="sq1a" placeholder="first keyword..." spellcheck="false">
+      <input class="fill-input" id="sq1b" placeholder="closing keyword..." spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkFillPair('sq1','module','endmodule','sq1a','sq1b')">CHECK</button>
+    </div>
+    <div class="feedback" id="sq1-fb"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="q-card" id="sq2">
+    <div class="q-num"><span>SYNTAX · Q02</span><span class="q-tag">mcq</span></div>
+    <div class="q-text">In gate-level modeling, when you write <code>and a1(x, a, b);</code> — which signal is the output?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('sq2', this, false)"><span class="opt-key">A</span>a — the first input listed after a1</button>
+      <button class="opt-btn" onclick="checkMCQ('sq2', this, true)"><span class="opt-key">B</span>x — the first signal in the port list</button>
+      <button class="opt-btn" onclick="checkMCQ('sq2', this, false)"><span class="opt-key">C</span>b — the last signal, since it's the result</button>
+      <button class="opt-btn" onclick="checkMCQ('sq2', this, false)"><span class="opt-key">D</span>a1 — the instance name is the output</button>
+    </div>
+    <div class="feedback" id="sq2-fb"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="q-card" id="sq3">
+    <div class="q-num"><span>SYNTAX · Q03</span><span class="q-tag">fill-in</span></div>
+    <div class="q-text">Write the sensitivity list for a D flip-flop that clocks on the <strong>rising edge</strong> and has an <strong>asynchronous active-high reset</strong>.</div>
+    <input class="fill-input" id="sq3a" placeholder="always @( ... )" spellcheck="false" style="width:100%;margin-top:4px;">
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkFillFlex('sq3','sq3a',['posedge clk, posedge reset','posedge clk,posedge reset','posedge clk or posedge reset'])">CHECK</button>
+    </div>
+    <div class="feedback" id="sq3-fb"></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="q-card" id="sq4">
+    <div class="q-num"><span>SYNTAX · Q04</span><span class="q-tag">mcq</span></div>
+    <div class="q-text">You want to use S and R signals together in a <code>case</code> statement as a 2-bit value. Which syntax is correct?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('sq4', this, false)"><span class="opt-key">A</span><code>case (S + R)</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq4', this, false)"><span class="opt-key">B</span><code>case (S, R)</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq4', this, true)"><span class="opt-key">C</span><code>case ({S, R})</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq4', this, false)"><span class="opt-key">D</span><code>case (S[R])</code></button>
+    </div>
+    <div class="feedback" id="sq4-fb"></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="q-card" id="sq5">
+    <div class="q-num"><span>SYNTAX · Q05</span><span class="q-tag">fill-in</span></div>
+    <div class="q-text">Write the Verilog number literal for: <strong>8-bit binary value 1111 0000</strong> &nbsp;and&nbsp; <strong>4-bit decimal value 9</strong>.</div>
+    <div class="fill-row">
+      <input class="fill-input" id="sq5a" placeholder="8-bit binary..." spellcheck="false">
+      <input class="fill-input" id="sq5b" placeholder="4-bit decimal..." spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkFillPair('sq5','8\'bf0','4\'d9','sq5a','sq5b')">CHECK</button>
+    </div>
+    <div class="feedback" id="sq5-fb"></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="q-card" id="sq6">
+    <div class="q-num"><span>SYNTAX · Q06</span><span class="q-tag">mcq</span></div>
+    <div class="q-text">Which line correctly declares a <strong>32-bit output that is driven inside an <code>always</code> block</strong>?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('sq6', this, false)"><span class="opt-key">A</span><code>output wire [31:0] count;</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq6', this, false)"><span class="opt-key">B</span><code>output [31:0] count;</code> &nbsp;(no type)</button>
+      <button class="opt-btn" onclick="checkMCQ('sq6', this, true)"><span class="opt-key">C</span><code>output reg [31:0] count;</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq6', this, false)"><span class="opt-key">D</span><code>reg output [31:0] count;</code></button>
+    </div>
+    <div class="feedback" id="sq6-fb"></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="q-card" id="sq7">
+    <div class="q-num"><span>SYNTAX · Q07</span><span class="q-tag">fill-in</span></div>
+    <div class="q-text">What is the sensitivity list shorthand that automatically includes ALL signals read inside the always block?</div>
+    <input class="fill-input" id="sq7a" placeholder="@( ??? )" spellcheck="false" style="width:100%;margin-top:4px;">
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkFillFlex('sq7','sq7a',['@(*)','@*','(*)', '*'])">CHECK</button>
+    </div>
+    <div class="feedback" id="sq7-fb"></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="q-card" id="sq8">
+    <div class="q-num"><span>SYNTAX · Q08</span><span class="q-tag">mcq</span></div>
+    <div class="q-text">In a testbench, you generate a clock with period = 20 time units. Which line does this?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('sq8', this, false)"><span class="opt-key">A</span><code>always #20 clk = ~clk;</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq8', this, true)"><span class="opt-key">B</span><code>always #10 clk = ~clk;</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq8', this, false)"><span class="opt-key">C</span><code>initial #20 clk = ~clk;</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq8', this, false)"><span class="opt-key">D</span><code>always clk = #20 ~clk;</code></button>
+    </div>
+    <div class="feedback" id="sq8-fb"></div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="q-card" id="sq9">
+    <div class="q-num"><span>SYNTAX · Q09</span><span class="q-tag">fill-in</span></div>
+    <div class="q-text">Write the two assignment operators: one for <strong>sequential/clocked</strong> always blocks and one for <strong>combinational</strong> always blocks and initial blocks.</div>
+    <div class="fill-row">
+      <input class="fill-input" id="sq9a" placeholder="sequential (non-blocking)..." spellcheck="false">
+      <input class="fill-input" id="sq9b" placeholder="combinational (blocking)..." spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkFillPair('sq9','<=','=','sq9a','sq9b')">CHECK</button>
+    </div>
+    <div class="feedback" id="sq9-fb"></div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="q-card" id="sq10">
+    <div class="q-num"><span>SYNTAX · Q10</span><span class="q-tag">mcq</span></div>
+    <div class="q-text">You instantiate a module using <strong>named port connections</strong>. The module has a port called <code>clk</code>. Your local signal is called <code>system_clk</code>. Which syntax is correct?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('sq10', this, false)"><span class="opt-key">A</span><code>.system_clk(clk)</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq10', this, false)"><span class="opt-key">B</span><code>(clk, system_clk)</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq10', this, true)"><span class="opt-key">C</span><code>.clk(system_clk)</code></button>
+      <button class="opt-btn" onclick="checkMCQ('sq10', this, false)"><span class="opt-key">D</span><code>clk = system_clk</code></button>
+    </div>
+    <div class="feedback" id="sq10-fb"></div>
+  </div>
+</div><!-- /syntax -->
+
+<!-- ═══════════════════ SECTION B: CONCEPTUAL ═══════════════════ -->
+<div id="sec-concept" class="section-view">
+  <div class="sec-head" style="border-left-color:var(--amber);">
+    <h2 style="color:var(--amber); text-shadow:0 0 15px rgba(255,179,0,0.4);">// Section B: Conceptual</h2>
+    <p>10 questions. Understanding over memorisation. These test whether you truly know <em>why</em> Verilog works the way it does.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progress</span><span id="con-prog-txt">0 / 10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="con-prog" style="width:0%;background:var(--amber);box-shadow:0 0 8px var(--amber);"></div></div>
+  </div>
+
+  <!-- CQ1 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q01</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">A signal is assigned inside an <code>always @(posedge clk)</code> block. You declare it as <code>wire</code>. What happens?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq1', this, false)"><span class="opt-key">A</span>It works fine — wire and reg are interchangeable inside always blocks.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq1', this, true)"><span class="opt-key">B</span>Compilation error — you cannot procedurally assign a wire; it must be reg.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq1', this, false)"><span class="opt-key">C</span>It simulates but gives wrong waveform.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq1', this, false)"><span class="opt-key">D</span>Wire is automatically promoted to reg by the simulator.</button>
+    </div>
+    <div class="feedback" id="cq1-fb"></div>
+  </div>
+
+  <!-- CQ2 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q02</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">You have two signals: <code>a = 4'b1010</code> and <code>b = 4'b0000</code>. What is the result of <code>a &amp;&amp; b</code> vs <code>a &amp; b</code>?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq2', this, false)"><span class="opt-key">A</span>Both give <code>4'b0000</code></button>
+      <button class="opt-btn" onclick="checkMCQ('cq2', this, true)"><span class="opt-key">B</span><code>a &amp;&amp; b</code> = <code>1'b0</code> &nbsp;|&nbsp; <code>a &amp; b</code> = <code>4'b0000</code></button>
+      <button class="opt-btn" onclick="checkMCQ('cq2', this, false)"><span class="opt-key">C</span><code>a &amp;&amp; b</code> = <code>1'b1</code> &nbsp;|&nbsp; <code>a &amp; b</code> = <code>4'b0000</code></button>
+      <button class="opt-btn" onclick="checkMCQ('cq2', this, false)"><span class="opt-key">D</span>Both give <code>1'b0</code></button>
+    </div>
+    <div class="feedback" id="cq2-fb"></div>
+  </div>
+
+  <!-- CQ3 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q03</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">Why does the JK flip-flop fix the problem with the SR flip-flop?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq3', this, false)"><span class="opt-key">A</span>It adds a clock so the forbidden state can't occur.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq3', this, false)"><span class="opt-key">B</span>It removes the Set and Reset inputs entirely.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq3', this, true)"><span class="opt-key">C</span>J=1, K=1 now has a defined behaviour — toggle — instead of being invalid/undefined.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq3', this, false)"><span class="opt-key">D</span>It stores two bits instead of one, so no state is invalid.</button>
+    </div>
+    <div class="feedback" id="cq3-fb"></div>
+  </div>
+
+  <!-- CQ4 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q04</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">You write <code>always @(a, b) begin ... end</code> for a combinational block, but forget to include signal <code>c</code> which is also read inside. What is the consequence?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq4', this, false)"><span class="opt-key">A</span>Compile error — Verilog will refuse to run.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq4', this, false)"><span class="opt-key">B</span>No problem — Verilog automatically adds c to the sensitivity list.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq4', this, true)"><span class="opt-key">C</span>A latch is inferred — the output won't update when c changes, causing incorrect simulation and unexpected hardware.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq4', this, false)"><span class="opt-key">D</span>c is just ignored silently, no effect on output.</button>
+    </div>
+    <div class="feedback" id="cq4-fb"></div>
+  </div>
+
+  <!-- CQ5 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q05</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">Consider this code inside <code>always @(posedge clk)</code>:<br><br>
+    <code>a = b + 1;</code><br><code>c = a * 2;</code><br><br>
+    And this code in the same block using non-blocking:<br><br>
+    <code>a &lt;= b + 1;</code><br><code>c &lt;= a * 2;</code><br><br>
+    In the non-blocking version, if <code>b = 3</code>, what is <code>c</code> after one clock cycle?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq5', this, false)"><span class="opt-key">A</span>8 — because a becomes 4, then c = 4 × 2</button>
+      <button class="opt-btn" onclick="checkMCQ('cq5', this, true)"><span class="opt-key">B</span>c = old_a × 2 — because both RHS are evaluated with old values simultaneously</button>
+      <button class="opt-btn" onclick="checkMCQ('cq5', this, false)"><span class="opt-key">C</span>0 — non-blocking assignments don't take effect until next cycle</button>
+      <button class="opt-btn" onclick="checkMCQ('cq5', this, false)"><span class="opt-key">D</span>Same as blocking — no difference in this case</button>
+    </div>
+    <div class="feedback" id="cq5-fb"></div>
+  </div>
+
+  <!-- CQ6 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q06</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">What is the functional difference between <code>initial</code> and <code>always</code>?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq6', this, false)"><span class="opt-key">A</span><code>initial</code> runs at every clock edge, <code>always</code> runs once at start.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq6', this, true)"><span class="opt-key">B</span><code>initial</code> executes once at time 0 then stops. <code>always</code> loops continuously from time 0 forever.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq6', this, false)"><span class="opt-key">C</span>Both loop, but <code>initial</code> has a stop condition.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq6', this, false)"><span class="opt-key">D</span>They are identical — <code>initial</code> is just shorthand for <code>always</code> with a finish call.</button>
+    </div>
+    <div class="feedback" id="cq6-fb"></div>
+  </div>
+
+  <!-- CQ7 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q07</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">In a testbench, you declare an input to the UUT as <code>wire</code> and try to drive it in an <code>initial</code> block. What happens?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq7', this, true)"><span class="opt-key">A</span>Error — you can't procedurally assign a wire. Testbench inputs to UUT must be <code>reg</code>.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq7', this, false)"><span class="opt-key">B</span>It works — wire just means the signal goes through a physical connection.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq7', this, false)"><span class="opt-key">C</span>It works in simulation but fails synthesis.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq7', this, false)"><span class="opt-key">D</span>The signal stays at X indefinitely.</button>
+    </div>
+    <div class="feedback" id="cq7-fb"></div>
+  </div>
+
+  <!-- CQ8 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q08</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">Can you put two complete and separate module definitions in a single <code>.v</code> file? For example, both your sub-module and your top-level module?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq8', this, false)"><span class="opt-key">A</span>No — each module must be in its own file, named identically to the module.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq8', this, true)"><span class="opt-key">B</span>Yes — multiple <code>module...endmodule</code> blocks can coexist in one file. Order usually doesn't matter in simulation.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq8', this, false)"><span class="opt-key">C</span>Only if you use <code>`include</code> directives between them.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq8', this, false)"><span class="opt-key">D</span>Yes, but only if one module instantiates the other directly.</button>
+    </div>
+    <div class="feedback" id="cq8-fb"></div>
+  </div>
+
+  <!-- CQ9 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q09</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">What does the T flip-flop have in common with the JK flip-flop, structurally?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq9', this, false)"><span class="opt-key">A</span>T-FF is SR-FF with both inputs tied together.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq9', this, true)"><span class="opt-key">B</span>T-FF is JK-FF with J and K tied to the same input T — so it only has Hold and Toggle modes.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq9', this, false)"><span class="opt-key">C</span>T-FF is a D-FF with a NOT gate added at the input.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq9', this, false)"><span class="opt-key">D</span>T-FF has no relation to JK-FF.</button>
+    </div>
+    <div class="feedback" id="cq9-fb"></div>
+  </div>
+
+  <!-- CQ10 -->
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT · Q10</span><span class="q-tag amber">mcq</span></div>
+    <div class="q-text">An <code>assign</code> statement is called a "continuous assignment." What exactly does "continuous" mean here?</div>
+    <div class="options">
+      <button class="opt-btn" onclick="checkMCQ('cq10', this, false)"><span class="opt-key">A</span>It runs inside a loop that continuously re-evaluates every clock cycle.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq10', this, false)"><span class="opt-key">B</span>It only evaluates once and holds that value forever.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq10', this, true)"><span class="opt-key">C</span>The left-hand side is <em>always</em> equal to the right-hand side — it updates immediately any time any input in the expression changes, without any trigger or clock.</button>
+      <button class="opt-btn" onclick="checkMCQ('cq10', this, false)"><span class="opt-key">D</span>It runs continuously only while a clock signal is high.</button>
+    </div>
+    <div class="feedback" id="cq10-fb"></div>
+  </div>
+
+</div><!-- /concept -->
+
+<!-- ═══════════════════ SECTION C: CODE CHALLENGES ═══════════════════ -->
+<div id="sec-code" class="section-view">
+  <div class="sec-head" style="border-left-color:var(--teal);">
+    <h2 style="color:var(--teal); text-shadow:0 0 15px rgba(0,229,204,0.4);">// Section C: Code Challenges</h2>
+    <p>Write real Verilog. Starts basic, ends with a Boss challenge: Counter + ALU wired together as one system. Use the textarea, then reveal the answer.</p>
+  </div>
+
+  <!-- CC1 -->
+  <div class="q-card">
+    <div class="q-num"><span>CODE · C01</span><span class="q-tag" style="color:var(--teal);border-color:var(--teal-dim,#0F766E);background:rgba(0,229,204,0.05)">dataflow</span></div>
+    <div class="q-text">Write a complete Verilog module for a <strong>2-input XOR gate</strong> using dataflow modeling (assign statement). Name it <code>xor_gate</code>. Inputs: <code>a</code>, <code>b</code>. Output: <code>y</code>.</div>
+    <textarea class="code-area" id="cc1-code" placeholder="module xor_gate(..." spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-reveal" onclick="toggleAnswer('cc1-ans')">REVEAL ANSWER</button>
+      <button class="btn btn-reset" onclick="document.getElementById('cc1-code').value=''">CLEAR</button>
+    </div>
+    <div class="answer-box" id="cc1-ans">
+      <div class="ans-label">model answer</div>
+      <pre><span class="kw">module</span> <span class="mo">xor_gate</span>(
+    <span class="ty">output</span> y,       <span class="cm">// output first, convention</span>
+    <span class="ty">input</span>  a, b
+);
+    <span class="kw">assign</span> y = a ^ b;   <span class="cm">// ^ is bitwise XOR</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>Key points:</strong> Output declared first (convention). <code>assign</code> drives a <code>wire</code> — no need to say <code>wire</code> for output since it's the default for non-reg outputs. The expression <code>a ^ b</code> is continuously evaluated — any change in a or b instantly updates y.
+      </div>
+    </div>
+  </div>
+
+  <!-- CC2 -->
+  <div class="q-card">
+    <div class="q-num"><span>CODE · C02</span><span class="q-tag" style="color:var(--teal);border-color:var(--teal-dim,#0F766E);background:rgba(0,229,204,0.05)">behavioral</span></div>
+    <div class="q-text">Write a <strong>behavioral half adder</strong>. Inputs: <code>a</code>, <code>b</code>. Outputs: <code>sum</code>, <code>carry</code>. Use an <code>always</code> block with <code>@(*)</code>.</div>
+    <textarea class="code-area" id="cc2-code" placeholder="module half_adder(..." spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-reveal" onclick="toggleAnswer('cc2-ans')">REVEAL ANSWER</button>
+      <button class="btn btn-reset" onclick="document.getElementById('cc2-code').value=''">CLEAR</button>
+    </div>
+    <div class="answer-box" id="cc2-ans">
+      <div class="ans-label">model answer</div>
+      <pre><span class="kw">module</span> <span class="mo">half_adder</span>(sum, carry, a, b);
+    <span class="ty">input</span>      a, b;
+    <span class="ty">output reg</span> sum, carry;  <span class="cm">// reg because driven in always</span>
+
+    <span class="kw">always</span> @(*) <span class="cm">// @(*) = trigger on any input change</span>
+    <span class="kw">begin</span>
+        sum   = a ^ b;  <span class="cm">// blocking = fine for combinational</span>
+        carry = a & b;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>Why <code>output reg</code>?</strong> Because <code>sum</code> and <code>carry</code> are assigned inside an <code>always</code> block. Anything assigned inside always must be <code>reg</code>.<br><br>
+        <strong>Why <code>@(*)</code> not <code>@(posedge clk)</code>?</strong> This is combinational logic — it has no clock. It must react instantly to input changes, not on a clock edge. <code>@(*)</code> ensures both <code>a</code> and <code>b</code> are in the sensitivity list automatically.<br><br>
+        <strong>Why <code>=</code> not <code>&lt;=</code>?</strong> Combinational blocks should use blocking <code>=</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- CC3 -->
+  <div class="q-card">
+    <div class="q-num"><span>CODE · C03</span><span class="q-tag" style="color:var(--teal);border-color:var(--teal-dim,#0F766E);background:rgba(0,229,204,0.05)">sequential</span></div>
+    <div class="q-text">Write a <strong>D flip-flop with an asynchronous active-high reset</strong>. Inputs: <code>D</code>, <code>clk</code>, <code>reset</code>. Outputs: <code>Q</code>, <code>Qbar</code>. When reset is high, Q = 0 immediately (no clock needed).</div>
+    <textarea class="code-area" id="cc3-code" placeholder="module d_ff(..." spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-reveal" onclick="toggleAnswer('cc3-ans')">REVEAL ANSWER</button>
+      <button class="btn btn-reset" onclick="document.getElementById('cc3-code').value=''">CLEAR</button>
+    </div>
+    <div class="answer-box" id="cc3-ans">
+      <div class="ans-label">model answer</div>
+      <pre><span class="kw">module</span> <span class="mo">d_ff</span>(Q, Qbar, D, clk, reset);
+    <span class="ty">input</span>      D, clk, reset;
+    <span class="ty">output reg</span> Q, Qbar;
+
+    <span class="kw">always</span> @(<span class="kw">posedge</span> clk, <span class="kw">posedge</span> reset)
+    <span class="kw">begin</span>
+        <span class="kw">if</span> (reset) <span class="kw">begin</span>
+            Q    &lt;= <span class="nu">1'b0</span>;
+            Qbar &lt;= <span class="nu">1'b1</span>;
+        <span class="kw">end</span>
+        <span class="kw">else</span> <span class="kw">begin</span>
+            Q    &lt;= D;
+            Qbar &lt;= ~D;
+        <span class="kw">end</span>
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>Async reset:</strong> <code>posedge reset</code> is in the sensitivity list alongside <code>posedge clk</code>. This means: run the block on a rising clock edge <em>OR</em> when reset goes high. The <code>if (reset)</code> check inside handles it — reset wins regardless of clock.<br><br>
+        <strong>Sync reset</strong> would only have <code>@(posedge clk)</code> — reset only takes effect on a clock edge. Async is more common in practice.<br><br>
+        <strong>Non-blocking <code>&lt;=</code></strong> is correct here — sequential logic.
+      </div>
+    </div>
+  </div>
+
+  <!-- CC4 -->
+  <div class="q-card">
+    <div class="q-num"><span>CODE · C04</span><span class="q-tag" style="color:var(--teal);border-color:var(--teal-dim,#0F766E);background:rgba(0,229,204,0.05)">sequential</span></div>
+    <div class="q-text">Write a <strong>32-bit up counter</strong>. On each positive clock edge it increments by 1. An active-high async <code>reset</code> sets it back to 0. Name the output <code>count</code>. Write its complete <strong>testbench</strong> in the same file.</div>
+    <textarea class="code-area boss" id="cc4-code" placeholder="// write BOTH the module AND its testbench here..." spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-reveal" onclick="toggleAnswer('cc4-ans')">REVEAL ANSWER</button>
+      <button class="btn btn-reset" onclick="document.getElementById('cc4-code').value=''">CLEAR</button>
+    </div>
+    <div class="answer-box" id="cc4-ans">
+      <div class="ans-label">module + testbench in one file</div>
+      <pre><span class="cm">// ─────────── MODULE ───────────</span>
+<span class="kw">module</span> <span class="mo">counter_32</span>(count, clk, reset);
+    <span class="ty">input</span>          clk, reset;
+    <span class="ty">output reg</span> [<span class="nu">31</span>:<span class="nu">0</span>] count;
+
+    <span class="kw">always</span> @(<span class="kw">posedge</span> clk, <span class="kw">posedge</span> reset)
+    <span class="kw">begin</span>
+        <span class="kw">if</span> (reset)
+            count &lt;= <span class="nu">32'd0</span>;
+        <span class="kw">else</span>
+            count &lt;= count + <span class="nu">1</span>;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span>
+
+<span class="cm">// ─────────── TESTBENCH ───────────</span>
+<span class="kw">module</span> <span class="mo">counter_32_TB</span>;  <span class="cm">// no port list — testbenches never have ports</span>
+    <span class="ty">reg</span>          clk, reset;   <span class="cm">// inputs to UUT → reg (you drive them)</span>
+    <span class="ty">wire</span> [<span class="nu">31</span>:<span class="nu">0</span>]  count;        <span class="cm">// output of UUT → wire (it drives it)</span>
+
+    <span class="cm">// Instantiate the design under test</span>
+    <span class="mo">counter_32</span> uut (
+        .count(count),
+        .clk(clk),
+        .reset(reset)
+    );
+
+    <span class="cm">// Clock: toggle every 5 units → period = 10 time units</span>
+    <span class="kw">always</span> #<span class="nu">5</span> clk = ~clk;
+
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        clk   = <span class="nu">0</span>;
+        reset = <span class="nu">1</span>;         <span class="cm">// assert reset at start</span>
+        #<span class="nu">12</span>  reset = <span class="nu">0</span>;    <span class="cm">// release after 12 units</span>
+        #<span class="nu">200</span> <span class="sy">$finish</span>;      <span class="cm">// run for 200 units then stop</span>
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>The key pattern for any testbench:</strong><br>
+        1. No port list on the testbench module itself.<br>
+        2. UUT inputs → <code>reg</code>. UUT outputs → <code>wire</code>.<br>
+        3. Instantiate with named connections <code>.port(local_signal)</code>.<br>
+        4. Separate <code>always</code> block for clock. <code>initial</code> block for stimulus.<br>
+        5. End with <code>$finish</code>.<br><br>
+        <strong>Why #12 for reset release?</strong> So the first clock edge hits while reset is still high — confirming reset works — then count starts from 0.
+      </div>
+    </div>
+  </div>
+
+  <!-- CC5 BOSS -->
+  <div class="q-card boss-card">
+    <div class="q-num"><span>CODE · C05</span><span class="boss-badge">⚡ BOSS CHALLENGE</span></div>
+    <div class="q-text">Design a <strong>two-module system in a single file</strong>:<br><br>
+    <strong>Module 1 — <code>op_counter</code></strong>: A 2-bit up counter that wraps around (0→1→2→3→0→...). Clock + async reset. Output: <code>op[1:0]</code>.<br><br>
+    <strong>Module 2 — <code>alu_unit</code></strong>: A 4-bit ALU. Inputs: <code>A[3:0]</code>, <code>B[3:0]</code>, <code>sel[1:0]</code>. Output: <code>result[4:0]</code> (5 bits to hold carry). Operations: <code>sel=0</code> → AND, <code>sel=1</code> → OR, <code>sel=2</code> → Addition, <code>sel=3</code> → Subtraction.<br><br>
+    <strong>Module 3 — <code>counter_alu_top</code></strong>: The top-level. Instantiates both modules. The counter's output directly drives the ALU's <code>sel</code> — so each clock cycle the operation automatically changes.<br><br>
+    Then write <strong>two separate testbenches</strong> in the same file: one tests the counter alone, one tests the whole top-level system.
+    </div>
+    <textarea class="code-area boss" id="cc5-code" placeholder="// Module 1: op_counter&#10;// Module 2: alu_unit&#10;// Module 3: counter_alu_top&#10;// Testbench 1: test the counter alone&#10;// Testbench 2: test the full system" spellcheck="false"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-reveal" onclick="toggleAnswer('cc5-ans')">REVEAL ANSWER</button>
+      <button class="btn btn-reset" onclick="document.getElementById('cc5-code').value=''">CLEAR</button>
+    </div>
+    <div class="answer-box" id="cc5-ans">
+      <div class="ans-label">complete solution — 5 modules in one file</div>
+      <pre><span class="cm">// ═══════════════════════════════════════════
+// MODULE 1: 2-bit up counter
+// Wraps: 0→1→2→3→0→1→...
+// ═══════════════════════════════════════════</span>
+<span class="kw">module</span> <span class="mo">op_counter</span>(op, clk, reset);
+    <span class="ty">input</span>          clk, reset;
+    <span class="ty">output reg</span> [<span class="nu">1</span>:<span class="nu">0</span>] op;
+
+    <span class="kw">always</span> @(<span class="kw">posedge</span> clk, <span class="kw">posedge</span> reset)
+    <span class="kw">begin</span>
+        <span class="kw">if</span> (reset)
+            op &lt;= <span class="nu">2'b00</span>;
+        <span class="kw">else</span>
+            op &lt;= op + <span class="nu">1</span>;  <span class="cm">// 2-bit auto-wraps at 3→0</span>
+    <span class="kw">end</span>
+<span class="kw">endmodule</span>
+
+<span class="cm">// ═══════════════════════════════════════════
+// MODULE 2: 4-bit ALU
+// sel=0:AND  sel=1:OR  sel=2:ADD  sel=3:SUB
+// result is 5 bits to hold carry/borrow
+// ═══════════════════════════════════════════</span>
+<span class="kw">module</span> <span class="mo">alu_unit</span>(result, A, B, sel);
+    <span class="ty">input</span>      [<span class="nu">3</span>:<span class="nu">0</span>] A, B;
+    <span class="ty">input</span>      [<span class="nu">1</span>:<span class="nu">0</span>] sel;
+    <span class="ty">output reg</span> [<span class="nu">4</span>:<span class="nu">0</span>] result; <span class="cm">// 5 bits: bit4 is carry/borrow</span>
+
+    <span class="kw">always</span> @(*)
+    <span class="kw">begin</span>
+        <span class="kw">case</span> (sel)
+            <span class="nu">2'b00</span>: result = {<span class="nu">1'b0</span>, A & B};     <span class="cm">// AND  — no carry</span>
+            <span class="nu">2'b01</span>: result = {<span class="nu">1'b0</span>, A | B};     <span class="cm">// OR   — no carry</span>
+            <span class="nu">2'b10</span>: result = A + B;              <span class="cm">// ADD  — carry in bit4</span>
+            <span class="nu">2'b11</span>: result = A - B;              <span class="cm">// SUB  — borrow in bit4</span>
+            <span class="kw">default</span>: result = <span class="nu">5'b0</span>;
+        <span class="kw">endcase</span>
+    <span class="kw">end</span>
+<span class="kw">endmodule</span>
+
+<span class="cm">// ═══════════════════════════════════════════
+// MODULE 3: TOP-LEVEL — wires counter into ALU
+// counter.op → alu.sel
+// Every clock edge, op increments → ALU op changes
+// ═══════════════════════════════════════════</span>
+<span class="kw">module</span> <span class="mo">counter_alu_top</span>(result, A, B, clk, reset);
+    <span class="ty">input</span>      [<span class="nu">3</span>:<span class="nu">0</span>] A, B;
+    <span class="ty">input</span>              clk, reset;
+    <span class="ty">output</span>     [<span class="nu">4</span>:<span class="nu">0</span>] result;
+
+    <span class="ty">wire</span> [<span class="nu">1</span>:<span class="nu">0</span>] current_op;  <span class="cm">// internal wire: counter → alu</span>
+
+    <span class="cm">// Instance 1: counter generates the select signal</span>
+    <span class="mo">op_counter</span> ctr_inst (
+        .op(current_op),
+        .clk(clk),
+        .reset(reset)
+    );
+
+    <span class="cm">// Instance 2: ALU uses that select signal</span>
+    <span class="mo">alu_unit</span> alu_inst (
+        .result(result),
+        .A(A),
+        .B(B),
+        .sel(current_op)   <span class="cm">// &lt;— driven by counter output</span>
+    );
+<span class="kw">endmodule</span>
+
+<span class="cm">// ═══════════════════════════════════════════
+// TESTBENCH 1: Tests op_counter ALONE
+// Verifies it counts 0→1→2→3→0→... and resets
+// ═══════════════════════════════════════════</span>
+<span class="kw">module</span> <span class="mo">tb_counter</span>;
+    <span class="ty">reg</span>          clk, reset;
+    <span class="ty">wire</span> [<span class="nu">1</span>:<span class="nu">0</span>]  op;
+
+    <span class="mo">op_counter</span> uut (.op(op), .clk(clk), .reset(reset));
+
+    <span class="kw">always</span> #<span class="nu">5</span> clk = ~clk;
+
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        <span class="sy">$monitor</span>(<span class="sy">$time</span>, <span class="st">" reset=%b op=%b"</span>, reset, op);
+        clk = <span class="nu">0</span>; reset = <span class="nu">1</span>;
+        #<span class="nu">12</span> reset = <span class="nu">0</span>;   <span class="cm">// release reset</span>
+        #<span class="nu">100</span> <span class="sy">$finish</span>;   <span class="cm">// watch 10 clock cycles</span>
+    <span class="kw">end</span>
+<span class="kw">endmodule</span>
+
+<span class="cm">// ═══════════════════════════════════════════
+// TESTBENCH 2: Tests the FULL SYSTEM (top-level)
+// Feeds fixed A and B, watches result change each cycle
+// as counter cycles through AND→OR→ADD→SUB→AND→...
+// ═══════════════════════════════════════════</span>
+<span class="kw">module</span> <span class="mo">tb_system</span>;
+    <span class="ty">reg</span>  [<span class="nu">3</span>:<span class="nu">0</span>]  A, B;
+    <span class="ty">reg</span>          clk, reset;
+    <span class="ty">wire</span> [<span class="nu">4</span>:<span class="nu">0</span>]  result;
+
+    <span class="mo">counter_alu_top</span> uut (
+        .result(result),
+        .A(A), .B(B),
+        .clk(clk),
+        .reset(reset)
+    );
+
+    <span class="kw">always</span> #<span class="nu">5</span> clk = ~clk;
+
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        <span class="sy">$monitor</span>(<span class="sy">$time</span>, <span class="st">" A=%d B=%d result=%d"</span>, A, B, result);
+        clk = <span class="nu">0</span>; reset = <span class="nu">1</span>;
+        A = <span class="nu">4'd6</span>; B = <span class="nu">4'd3</span>;   <span class="cm">// fixed inputs: 6 and 3</span>
+        <span class="cm">// Expected cycle: AND=0010, OR=0111, ADD=01001, SUB=00011</span>
+        #<span class="nu">12</span> reset = <span class="nu">0</span>;
+        #<span class="nu">80</span> <span class="sy">$finish</span>;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>How multiple testbenches work in one file:</strong> Each is just another module with no ports. When you simulate in Xilinx ISE, you right-click and select which module is the "top" for simulation. You can switch between <code>tb_counter</code> and <code>tb_system</code> — same file, different simulations.<br><br>
+        <strong>The internal wire <code>current_op</code></strong>: This is what connects two modules inside the top-level. It's declared as a <code>wire</code> — output of counter drives it, ALU input reads it. This is the core of structural composition in Verilog.<br><br>
+        <strong>Why the ALU uses <code>@(*)</code> not <code>@(posedge clk)</code>?</strong> The ALU is combinational — it has no state, it just computes instantly based on inputs. The counter is what provides the clock-driven state. This separation of concerns is how real hardware is designed.<br><br>
+        <strong>The counter auto-wraps</strong> because it's a 2-bit reg. When it hits <code>2'b11</code> (3) and you add 1, it overflows back to <code>2'b00</code> (0). The hardware handles this naturally.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /code -->
+
+<!-- ═══════════════════ SECTION D: MULTI TESTBENCH ═══════════════════ -->
+<div id="sec-multi" class="section-view">
+  <div class="sec-head" style="border-left-color:var(--coral);">
+    <h2 style="color:var(--coral); text-shadow:0 0 15px rgba(255,79,79,0.4);">// Section D: Multiple Testbenches Explained</h2>
+    <p>A full breakdown of how to write and manage multiple testbenches — from basic to multi-module systems.</p>
+  </div>
+
+  <div class="q-card">
+    <div class="q-text" style="font-size:14px;line-height:1.8;">
+      <strong style="color:var(--green);">The Core Idea</strong><br><br>
+      A testbench is just a module with no ports. You can have as many of them as you want in a single file. In simulation (Xilinx ISE / ModelSim), you pick which module to simulate as "top." Each testbench is independent.
+    </div>
+    <div class="code-prompt" style="margin-top:16px;">
+      <strong>Pattern: multiple testbenches in one .v file</strong>
+    </div>
+    <div class="answer-box show" style="margin-top:0;">
+      <div class="ans-label">structure</div>
+      <pre><span class="cm">// ── your actual modules ──────────────────────────────────────</span>
+
+<span class="kw">module</span> <span class="mo">module_A</span>(...); ... <span class="kw">endmodule</span>
+<span class="kw">module</span> <span class="mo">module_B</span>(...); ... <span class="kw">endmodule</span>
+<span class="kw">module</span> <span class="mo">top_level</span>(...); ... <span class="kw">endmodule</span>  <span class="cm">// instantiates A and B</span>
+
+<span class="cm">// ── testbench for module_A alone ─────────────────────────────</span>
+<span class="kw">module</span> <span class="mo">tb_A</span>;                   <span class="cm">// no port list</span>
+    <span class="ty">reg</span>  input_to_A;
+    <span class="ty">wire</span> output_of_A;
+    <span class="mo">module_A</span> uut (.in(input_to_A), .out(output_of_A));
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        <span class="cm">// drive input_to_A, observe output_of_A</span>
+        #<span class="nu">100</span> <span class="sy">$finish</span>;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span>
+
+<span class="cm">// ── testbench for the full system ───────────────────────────</span>
+<span class="kw">module</span> <span class="mo">tb_system</span>;              <span class="cm">// separate module, same file</span>
+    <span class="ty">reg</span>  sys_clk, sys_reset;
+    <span class="ty">wire</span> sys_out;
+    <span class="mo">top_level</span> uut (.clk(sys_clk), .reset(sys_reset), .out(sys_out));
+    <span class="kw">always</span> #<span class="nu">5</span> sys_clk = ~sys_clk;
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        sys_clk = <span class="nu">0</span>; sys_reset = <span class="nu">1</span>;
+        #<span class="nu">20</span> sys_reset = <span class="nu">0</span>;
+        #<span class="nu">200</span> <span class="sy">$finish</span>;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>In Xilinx ISE:</strong> Set the "Sources for" dropdown to "Simulation." Right-click the testbench module you want to run and select it as top. You can switch between <code>tb_A</code> and <code>tb_system</code> without changing files.<br><br>
+        <strong>Naming convention:</strong> Always name your testbench with a <code>_TB</code> or <code>tb_</code> suffix. Makes it instantly obvious what's a design module vs a test module.
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num"><span>CONCEPT CHECK</span></div>
+    <div class="q-text">When your testbench has <strong>two signals with the same name</strong> as ports in different modules you instantiate, how do you keep them separate?</div>
+    <div class="answer-box show">
+      <div class="ans-label">answer</div>
+      <pre><span class="cm">// You give the LOCAL signal a different name.
+// The .port_name(local_signal) syntax separates them cleanly.</span>
+
+<span class="kw">module</span> <span class="mo">tb_example</span>;
+    <span class="ty">reg</span>  my_clk, my_reset;      <span class="cm">// LOCAL names in testbench</span>
+    <span class="ty">wire</span> [<span class="nu">3</span>:<span class="nu">0</span>] counter_out;
+    <span class="ty">wire</span> [<span class="nu">4</span>:<span class="nu">0</span>] alu_out;
+
+    <span class="cm">// Both modules have a 'clk' port — but we connect them
+    // to the SAME local signal (my_clk) just fine:</span>
+    <span class="mo">op_counter</span> c1 (.clk(my_clk), .reset(my_reset), .op(counter_out));
+    <span class="mo">alu_unit</span>   a1 (.A(<span class="nu">4'd5</span>), .B(<span class="nu">4'd3</span>), .sel(counter_out[<span class="nu">1</span>:<span class="nu">0</span>]), .result(alu_out));
+
+    <span class="kw">always</span> #<span class="nu">5</span> my_clk = ~my_clk;
+    <span class="kw">initial</span> <span class="kw">begin</span>
+        my_clk = <span class="nu">0</span>; my_reset = <span class="nu">1</span>;
+        #<span class="nu">12</span> my_reset = <span class="nu">0</span>;
+        #<span class="nu">80</span> <span class="sy">$finish</span>;
+    <span class="kw">end</span>
+<span class="kw">endmodule</span></pre>
+      <div class="annotation">
+        <strong>The key insight:</strong> <code>.clk(my_clk)</code> means "connect the module's port named <code>clk</code> to my local signal called <code>my_clk</code>." The local testbench signal namespace and the module port namespace are completely separate. You can name your local signals anything — only the port name (after the dot) must match the module definition.
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num"><span>$MONITOR vs $DISPLAY — when to use which</span></div>
+    <div class="answer-box show" style="margin-top:0;">
+      <div class="ans-label">comparison</div>
+      <pre><span class="cm">// $display: prints ONCE when the line executes — like printf in C</span>
+<span class="sy">$display</span>(<span class="st">"A=%b B=%b result=%b"</span>, A, B, result);
+<span class="cm">// Use when you want to print at specific moments in your stimulus</span>
+
+<span class="cm">// $monitor: prints AUTOMATICALLY whenever any listed signal changes
+// Only ONE $monitor can be active at a time — last one wins</span>
+<span class="sy">$monitor</span>(<span class="sy">$time</span>, <span class="st">" A=%d B=%d result=%d"</span>, A, B, result);
+<span class="cm">// Use at the start of initial block — it watches forever</span>
+<span class="cm">// Great for sequential circuits where outputs change unpredictably</span>
+
+<span class="cm">// Format strings:
+// %b = binary   %d = decimal   %h = hex
+// %t = time     $time gives current simulation time</span></pre>
+      <div class="annotation">
+        <strong>Rule of thumb:</strong> Use <code>$monitor</code> for sequential/clocked designs where you want to see every output change. Use <code>$display</code> inside your stimulus sequence when you want to label specific test cases. Use both together — <code>$display("--- TEST AND ---")</code> then let <code>$monitor</code> print the actual values.
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card" style="border-color:var(--amber-dim);background:rgba(255,179,0,0.02);">
+    <div class="q-num"><span>SUMMARY</span></div>
+    <div class="answer-box show" style="margin-top:0; border-color: var(--amber-dim);">
+      <div class="ans-label" style="color:var(--amber);">the complete testbench checklist</div>
+      <pre><span class="cm">// ✓  Module name ends in _TB or starts with tb_ 
+// ✓  NO port list on the testbench module
+// ✓  UUT inputs  → declared as reg  in testbench
+// ✓  UUT outputs → declared as wire in testbench
+// ✓  Instantiate UUT with named port connections
+// ✓  Separate always block generates clock (always #N clk=~clk)
+// ✓  Initialize clk=0 in initial block
+// ✓  Release reset after a few time units
+// ✓  End simulation with $finish
+// ✓  For multiple testbenches: each is just another module in the file
+// ✓  In ISE: set top module for simulation = the testbench you want</span></pre>
+    </div>
+  </div>
+
+</div><!-- /multi -->
+
+</div><!-- /container -->
+
+<script>
+// ───────────── STATE ─────────────
+const scores = { syntax: 0, concept: 0 };
+const answered = new Set();
+
+function updateScoreDisplay() {
+  document.getElementById('hdr-syntax').textContent = scores.syntax;
+  document.getElementById('hdr-concept').textContent = scores.concept;
+  document.getElementById('hdr-total').textContent = (scores.syntax + scores.concept) + '/20';
+}
+
+// ───────────── NAV ─────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sec-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ───────────── MCQ ─────────────
+function checkMCQ(qid, btn, isCorrect) {
+  if (answered.has(qid)) return;
+  answered.add(qid);
+
+  const card = btn.closest('.q-card');
+  const btns = card.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById(qid + '-fb');
+  if (isCorrect) {
+    btn.classList.add('correct');
+    fb.textContent = '✓ Correct.';
+    fb.className = 'feedback show correct';
+    const section = qid.startsWith('c') ? 'concept' : 'syntax';
+    scores[section]++;
+    updateScoreDisplay();
+  } else {
+    btn.classList.add('wrong');
+    // find correct button and highlight it
+    btns.forEach(b => {
+      if (b !== btn) {
+        const onclick = b.getAttribute('onclick');
+        if (onclick && onclick.includes('true')) b.classList.add('revealed');
+      }
+    });
+    fb.textContent = '✗ Incorrect. The highlighted option was correct.';
+    fb.className = 'feedback show wrong';
+  }
+  updateProgress(qid);
+}
+
+// ───────────── FILL IN ─────────────
+function checkFillPair(qid, ans1, ans2, id1, id2) {
+  if (answered.has(qid)) return;
+  const v1 = document.getElementById(id1).value.trim().toLowerCase();
+  const v2 = document.getElementById(id2).value.trim().toLowerCase();
+  const correct = v1 === ans1.toLowerCase() && v2 === ans2.toLowerCase();
+  finishFill(qid, correct, [id1, id2], qid.startsWith('s') ? 'syntax' : 'concept');
+}
+
+function checkFillFlex(qid, inputId, answers) {
+  if (answered.has(qid)) return;
+  const v = document.getElementById(inputId).value.trim().toLowerCase().replace(/\s+/g,'');
+  const correct = answers.some(a => v === a.toLowerCase().replace(/\s+/g,''));
+  finishFill(qid, correct, [inputId], qid.startsWith('s') ? 'syntax' : 'concept');
+}
+
+function finishFill(qid, correct, inputIds, section) {
+  answered.add(qid);
+  const fb = document.getElementById(qid + '-fb');
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add(correct ? 'correct' : 'wrong');
+      el.disabled = true;
+    }
+  });
+  if (correct) {
+    fb.textContent = '✓ Correct!';
+    fb.className = 'feedback show correct';
+    scores[section]++;
+    updateScoreDisplay();
+  } else {
+    fb.textContent = '✗ Not quite. Check the answer reference in the study guide.';
+    fb.className = 'feedback show wrong';
+  }
+  updateProgress(qid);
+}
+
+// ───────────── PROGRESS ─────────────
+function updateProgress(qid) {
+  const isSyntax = qid.startsWith('s');
+  const prefix = isSyntax ? 's' : 'c';
+  const progId = isSyntax ? 'syn-prog' : 'con-prog';
+  const txtId  = isSyntax ? 'syn-prog-txt' : 'con-prog-txt';
+  let count = 0;
+  for (let i = 1; i <= 10; i++) {
+    if (answered.has(prefix + 'q' + i)) count++;
+  }
+  document.getElementById(progId).style.width = (count * 10) + '%';
+  document.getElementById(txtId).textContent = count + ' / 10';
+}
+
+// ───────────── REVEAL ─────────────
+function toggleAnswer(id) {
+  const box = document.getElementById(id);
+  box.classList.toggle('show');
+}
+
+// ───────────── TAB key in textareas ─────────────
+document.querySelectorAll('.code-area').forEach(ta => {
+  ta.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = this.selectionStart;
+      const val = this.value;
+      this.value = val.substring(0, s) + '    ' + val.substring(this.selectionEnd);
+      this.selectionStart = this.selectionEnd = s + 4;
+    }
+  });
+});
+</script>
+</body>
+</html>

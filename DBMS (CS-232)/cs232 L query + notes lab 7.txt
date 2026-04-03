@@ -1,0 +1,77 @@
+select customer.first_name, customer.last_name, payment.amount from customer inner join payment on customer.customer_id = payment.customer_id;
+
+select customer.first_name, customer.last_name, payment.amount from customer left join payment on customer.customer_id = payment.customer_id;
+
+select customer.first_name, customer.last_name, payment.amount from customer right join payment on customer.customer_id = payment.customer_id;
+
+
+select customer.first_name, store.store_id from customer cross join store 
+
+-- findinfg customers livign at the same address using self join
+
+select c1.first_name, c2.first_name, c1.address_id from customer c1 
+join customer c2 on c1.address_id = c2.address_id and c1.customer_id <> c2.customer_id
+
+-- null join is left join but with a null cond check 
+
+select c.customer_id, c.first_name from customer c left join rental r on c.customer_id = r.customer_id where r.customer_id is null
+
+select customer.first_name, customer.last_name, payment.amount from customer left join payment on customer.customer_id = payment.customer_id  where payment.customer_id is null ;
+
+-- semi join 
+
+
+
+
+
+
+-- 1)
+
+select c.customer_id, c.first_name, c.last_name, 
+f.title, r.rental_date
+from customer as c
+inner join rental as r on r.customer_id = c.customer_id
+inner join inventory as i on r.inventory_id = i.inventory_id
+inner join film as f on f.film_id = i.film_id
+order by r.rental_date
+limit 100;
+
+-- 2) 
+
+select c.customer_id, c.first_name, c.last_name, 
+coalesce(sum(p.amount),0) as total_paid
+
+from customer as c
+left join payment as p 
+on c.customer_id = p.customer_id
+group by c.customer_id, c.first_name, c.last_name order by total_paid desc
+limit 100;
+
+-- 3)
+
+select p.payment_id,
+p.payment_date, p.amount, c.first_name, c.last_name 
+from customer as c 
+right join payment as p 
+on c.customer_id = p.customer_id
+order by p.payment_date desc limit 100;
+
+
+-- 4)
+
+select c.customer_id, c.first_name, p.payment_id, p.amount
+from customer as c full join payment as p 
+on c.customer_id = p.customer_id 
+order by c.customer_id nulls last
+limit 200;
+
+-- 5) 
+
+select s.store_id, f.film_id, f.title
+from store as s cross join film as f 
+order by store_id asc;
+
+-- 6) Self join 
+
+select c1.customer_id as cust1_id,
+	c1.first_name as cust1_
