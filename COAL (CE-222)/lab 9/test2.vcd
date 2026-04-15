@@ -1,0 +1,67 @@
+$date
+	Mon Apr 13 16:06:16 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module test2 $end
+$var wire 4 ! Operation [3:0] $end
+$var reg 2 " ALUOp [1:0] $end
+$var reg 3 # funct3 [2:0] $end
+$var reg 7 $ funct7 [6:0] $end
+$scope module uut $end
+$var wire 2 % ALUOp [1:0] $end
+$var wire 3 & funct3 [2:0] $end
+$var wire 7 ' funct7 [6:0] $end
+$var reg 4 ( Operation [3:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b10 (
+b0 '
+b0 &
+b0 %
+b0 $
+b0 #
+b0 "
+b10 !
+$end
+#100000
+b110 !
+b110 (
+b1 "
+b1 %
+#200000
+b10 !
+b10 (
+b10 "
+b10 %
+#300000
+b110 !
+b110 (
+b1111111 $
+b1111111 '
+b11 "
+b11 %
+#400000
+b0 !
+b0 (
+b0 $
+b0 '
+b111 #
+b111 &
+b10 "
+b10 %
+#500000
+b1 !
+b1 (
+b110 #
+b110 &
+b11 "
+b11 %
+#600000

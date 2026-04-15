@@ -1,2 +1,2 @@
-iverilog -o  task1.v
+vvp test.vvp
 vvp test.vvp

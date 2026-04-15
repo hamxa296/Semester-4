@@ -1,0 +1,67 @@
+$date
+	Mon Apr 13 15:34:22 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module test1 $end
+$var wire 1 ! RegWrite $end
+$var wire 1 " MemtoReg $end
+$var wire 1 # MemWrite $end
+$var wire 1 $ MemRead $end
+$var wire 1 % Branch $end
+$var wire 1 & ALUSrc $end
+$var wire 1 ' ALUOp1 $end
+$var wire 1 ( ALUOp0 $end
+$var reg 7 ) inputs [6:0] $end
+$scope module uut $end
+$var wire 7 * inputs [6:0] $end
+$var reg 1 ( ALUOp0 $end
+$var reg 1 ' ALUOp1 $end
+$var reg 1 & ALUSrc $end
+$var reg 1 % Branch $end
+$var reg 1 $ MemRead $end
+$var reg 1 # MemWrite $end
+$var reg 1 " MemtoReg $end
+$var reg 1 ! RegWrite $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b110011 *
+b110011 )
+0(
+1'
+0&
+0%
+0$
+0#
+0"
+1!
+$end
+#100000
+0'
+1$
+1"
+1&
+b11 )
+b11 *
+#200000
+1#
+0$
+0!
+x"
+b100011 )
+b100011 *
+#300000
+1(
+1%
+0#
+0&
+b1100011 )
+b1100011 *
+#400000
