@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  fenics:
+    build: .
+    volumes:
+      - .:/app
+    command: python3 main.py

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamza Arif | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-color: #fcfcf9; /* Off-white */
+            --text-color: #111111;
+            --border-color: #111111;
+            
+            /* Comic-style vibrant accents */
+            --accent-red: #ff5e5b;
+            --accent-cyan: #00cecb;
+            --accent-yellow: #ffed66;
+            --accent-green: #c1f088;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Container & Layout */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        /* Initial Load Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header / Hero Section */
+        header {
+            margin-bottom: 80px;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        /* The Comic-Style Squared Buttons */
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            border: 3px solid var(--border-color);
+            /* The offset shadow */
+            box-shadow: 6px 6px 0px var(--border-color);
+            transition: all 0.15s ease-out;
+            cursor: pointer;
+            margin-right: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary { background-color: var(--accent-red); }
+        .btn-github { background-color: var(--accent-cyan); }
+        
+        /* Button Transitions */
+        .btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--border-color);
+        }
+
+        .btn:active {
+            transform: translate(6px, 6px);
+            box-shadow: 0px 0px 0px var(--border-color);
+        }
+
+        /* Typography */
+        h2 {
+            font-size: 2.5rem;
+            border-bottom: 4px solid var(--border-color);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 30px;
+        }
+
+        /* Projects Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        /* Project Cards */
+        .card {
+            background: var(--bg-color);
+            border: 3px solid var(--border-color);
+            box-shadow: 8px 8px 0px var(--border-color);
+            padding: 25px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--border-color);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            margin-bottom: 0;
+        }
+
+        .card-1 { background-color: var(--accent-yellow); }
+        .card-2 { background-color: var(--bg-color); }
+        .card-3 { background-color: var(--accent-green); }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            border-top: 3px solid var(--border-color);
+            padding-top: 20px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 3rem; }
+            .btn { display: block; margin-right: 0; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="fade-in">
+            <h1>Hamza Arif</h1>
+            <p class="subtitle">AI Undergraduate & Full-Stack Developer mapping the intersection of machine learning, avionics, and scalable web architectures.</p>
+            
+            <a href="mailto:your.email@example.com" class="btn btn-primary">Let's Connect</a>
+            <a href="https://github.com/hamxa296" target="_blank" class="btn btn-github">GitHub</a>
+        </header>
+
+        <section class="fade-in delay-1">
+            <h2>Featured Work</h2>
+            
+            <div class="grid">
+                <div class="card card-1">
+                    <h3>GIKI Chronicles</h3>
+                    <p>A full-stack campus guide engineered to scale, serving over 1,500 active users through a modern web ecosystem.</p>
+                </div>
+
+                <div class="card card-2">
+                    <h3>VisionGuard</h3>
+                    <p>High-performance facial recognition security framework utilizing ResNet-10 SSD and ArcFace algorithms.</p>
+                </div>
+
+                <div class="card card-3">
+                    <h3>GitShare</h3>
+                    <p>A structured, version-controlled file storage and collaboration platform bridging seamless data management.</p>
+                </div>
+                
+                <div class="card card-2" style="background-color: var(--accent-cyan);">
+                    <h3>Autonomous UAS Avionics</h3>
+                    <p>Engineered avionics and optimized power distribution systems for three autonomous Unmanned Aerial Systems.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="fade-in delay-2">
+            <h2>Tech Stack</h2>
+            <p><strong>Languages:</strong> C++, Python, JavaScript</p>
+            <p><strong>Frameworks & Tools:</strong> React.js, Next.js, Firebase, OpenCV, LaTeX</p>
+            <p><strong>Focus:</strong> Computer Vision, Evolutionary Computation, Reinforcement Learning, and Digital Logic.</p>
+        </section>
+
+        <footer class="fade-in delay-2">
+            <p>© 2026 Hamza Arif. Built with minimalism and offset shadows.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
