@@ -1,17 +1,16 @@
 module single_cycle_processor(
-    input  wire        clk,
-    input  wire        reset,
-    output wire [31:0] pc_out,
-    output wire [31:0] instruction,
-    output wire [31:0] alu_result,
-    output wire [31:0] read_data,
-    output wire        zero_flag
+    input          clk,
+    input          reset,
+    output  [31:0] pc_out,
+    output  [31:0] instruction,
+    output  [31:0] alu_result,
+    output  [31:0] read_data,
+    output         zero_flag
 );
 
     wire [31:0] pc_next;
     wire [31:0] pc_plus_4;
     wire [31:0] branch_target;
-    wire [31:0] jump_mux_out;
     wire [31:0] imm;
     wire [6:0]  opcode;
     wire [4:0]  rd;
@@ -23,7 +22,6 @@ module single_cycle_processor(
     wire [31:0] write_back_data;
     wire [31:0] read_data1;
     wire [31:0] read_data2;
-    wire [31:0] mem_to_reg_out;
     wire [3:0]  alu_ctrl;
     wire        alu_src;
     wire        mem_to_reg;
@@ -31,8 +29,6 @@ module single_cycle_processor(
     wire        mem_read;
     wire        mem_write;
     wire        branch;
-    wire        jump;
-    wire        jal;
     wire [1:0]  alu_op;
     wire        branch_taken;
 
@@ -70,8 +66,6 @@ module single_cycle_processor(
         .mem_read(mem_read),
         .mem_write(mem_write),
         .branch(branch),
-        .jump(jump),
-        .jal(jal),
         .alu_op(alu_op)
     );
 
@@ -95,21 +89,14 @@ module single_cycle_processor(
 
     assign branch_taken = branch & zero_flag;
 
-    mux2to1 #(.WIDTH(32)) branch_mux(
+    mux2to1 branch_mux(
         .in0(pc_plus_4),
         .in1(branch_target),
         .sel(branch_taken),
-        .out(jump_mux_out)
-    );
-
-    mux2to1 #(.WIDTH(32)) jump_mux(
-        .in0(jump_mux_out),
-        .in1(branch_target),
-        .sel(jump),
         .out(pc_next)
     );
 
-    mux2to1 #(.WIDTH(32)) alu_src_mux(
+    mux2to1 alu_src_mux(
         .in0(read_data2),
         .in1(imm),
         .sel(alu_src),
@@ -140,17 +127,10 @@ module single_cycle_processor(
         .read_data(read_data)
     );
 
-    mux2to1 #(.WIDTH(32)) mem_to_reg_mux(
+    mux2to1 mem_to_reg_mux(
         .in0(alu_result),
         .in1(read_data),
         .sel(mem_to_reg),
-        .out(mem_to_reg_out)
-    );
-
-    mux2to1 #(.WIDTH(32)) jal_mux(
-        .in0(mem_to_reg_out),
-        .in1(pc_plus_4),
-        .sel(jal),
         .out(write_back_data)
     );
 

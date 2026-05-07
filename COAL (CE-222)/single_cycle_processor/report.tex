@@ -1,0 +1,161 @@
+\documentclass[10pt, a4paper, twocolumn]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage[skip=4pt]{caption}
+\usepackage{placeins}
+
+\geometry{margin=0.7in}
+\setstretch{0.95}
+
+% --- Float spacing (tight & clean) ---
+\setlength{\textfloatsep}{6pt}
+\setlength{\floatsep}{5pt}
+\setlength{\intextsep}{5pt}
+
+% --- Code Styling ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
+\lstset{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    showstringspaces=false,
+    frame=single
+}
+
+\title{\textbf{Design and Implementation of a Single-Cycle RISC-V Processor}}
+\author{\textbf{Hamza Arif}, Registration No: \textbf{2024206}, \textbf{CE-222L}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper presents the design and implementation of a 32-bit single-cycle RISC-V processor using Verilog HDL. The processor supports a subset of the RV32I instruction set and integrates arithmetic, logical, branch, and memory operations within a unified execution cycle. Particular emphasis is placed on the correct implementation of memory access instructions and immediate generation logic. Functional verification demonstrates correct operation of all supported instructions with a Cycles Per Instruction (CPI) of one.
+\end{abstract}
+
+\section{Introduction}
+Single-cycle processor design provides a fundamental framework for understanding instruction execution and processor organization. In this model, each instruction completes within a single clock cycle, resulting in a deterministic and conceptually simple architecture. The processor implemented in this work follows the RISC-V instruction set architecture, which emphasizes modularity and reduced instruction complexity.
+
+\section{Single-Cycle Architecture}
+In a single-cycle processor, the clock period is determined by the longest combinational path. This typically corresponds to memory-access instructions, which require multiple sequential operations within a single cycle, including instruction fetch, operand access, execution, memory interaction, and write-back.
+
+\subsection{Advantages}
+\begin{itemize}
+    \item \textbf{Structural Simplicity:} Minimal control complexity due to the absence of pipelining.
+    \item \textbf{Deterministic Timing:} Each instruction executes in exactly one cycle (CPI = 1).
+\end{itemize}
+
+\subsection{Limitations}
+\begin{itemize}
+    \item \textbf{Performance Constraints:} The clock frequency is limited by the longest instruction path, reducing efficiency for simpler instructions.
+\end{itemize}
+
+\section{Supported Instruction Set}
+The processor supports the following instructions:
+\textbf{\texttt{add}, \texttt{sub}, \texttt{and}, \texttt{or}, \texttt{lw}, \texttt{sw}, and \texttt{beq}.}
+
+\section{Processor Architecture}
+The processor consists of a data path and a control path that operate in coordination.
+
+\subsection{Instruction Fetch}
+The Program Counter (PC) provides the address for instruction memory. The PC is incremented by four after each instruction fetch.
+
+\subsection{Instruction Decode}
+Instructions are decomposed into opcode, register indices, and immediate values. The control unit generates appropriate control signals, while the register file supplies operand data.
+
+\subsection{Execution}
+The Arithmetic Logic Unit (ALU) performs arithmetic and logical operations. For memory instructions, it computes effective addresses by combining register values with immediate offsets.
+
+\subsection{Memory Access and Write-Back}
+Data memory is accessed during load and store operations. Results from the ALU or memory are written back to the register file as required.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\linewidth]{architecture.png}
+    \caption{Block diagram of the single-cycle RISC-V processor, illustrating interactions between core components including the program counter, register file, ALU, control unit, and memory modules.}
+    \label{fig:architecture}
+\end{figure}
+
+\section{Implementation~Considerations}
+
+\subsection{Memory Operations}
+Load and store instructions were implemented using a dedicated data memory module. The control unit generates memory access signals, ensuring proper synchronization with execution. Register initialization is achieved through predefined memory values.
+
+\subsection{Immediate Generation}
+The immediate generator supports multiple instruction formats:
+\begin{itemize}
+    \item \textbf{I-type:} 12-bit sign-extended immediate
+    \item \textbf{S-type:} Split-format immediate
+    \item \textbf{B-type:} Rearranged immediate encoding
+\end{itemize}
+
+\section{Verification}
+The following test program validates the execution of all supported instructions:
+
+\begin{lstlisting}[language=Verilog]
+lw  x1, 0(x0)
+lw  x2, 4(x0)
+add x3, x1, x2
+sub x4, x2, x1
+sw  x3, 8(x0)
+and x5, x3, x4
+or  x6, x3, x4
+beq x4, x1, 8
+sw  x1, 12(x0)
+sw  x2, 16(x0)
+\end{lstlisting}
+
+\section{Simulation Results}
+Functional simulation was performed using Icarus Verilog. The results confirm correct execution, as illustrated below.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{terminal1.png}
+    \caption{Basic instruction execution flow observed during simulation, showing sequential processing of instructions.}
+    \label{fig:terminal_flow}
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{terminal2.png}
+    \caption{Register values after execution, confirming correct arithmetic and logical operations.}
+    \label{fig:terminal_registers}
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{terminal3.png}
+    \caption{Data memory contents after execution, verifying correct load and store operations.}
+    \label{fig:terminal_memory}
+\end{figure}
+\FloatBarrier
+
+\section{Waveform Analysis}
+Waveform analysis verifies signal timing and synchronization. The observed behavior confirms correct single-cycle execution, as shown in Fig.~\ref{fig:waveform}.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\linewidth]{waveform.png}
+    \caption{Timing waveform illustrating instruction execution and signal transitions across processor components.}
+    \label{fig:waveform}
+\end{figure}
+
+\section{Conclusion}
+The designed processor successfully implements a subset of the RV32I instruction set using a single-cycle architecture. The system achieves a CPI of one while correctly integrating computation, control flow, and memory operations. This implementation establishes a strong foundation for further exploration of advanced architectures, including pipelined designs.
+
+\end{document}

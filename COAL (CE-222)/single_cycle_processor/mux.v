@@ -1,12 +1,16 @@
-module mux2to1 #(
-    parameter WIDTH = 32
-)(
-    input  wire [WIDTH-1:0] in0,
-    input  wire [WIDTH-1:0] in1,
-    input  wire             sel,
-    output wire [WIDTH-1:0] out
+module mux2to1 (
+    input   [31:0] in0,
+    input   [31:0] in1,
+    input          sel,
+    output reg  [31:0] out
 );
 
-    assign out = sel ? in1 : in0;
+    always @(*) begin
+        if (sel) begin
+            out = in1;
+        end else begin
+            out = in0;
+        end
+    end
 
 endmodule

@@ -1,0 +1,22 @@
+# RISC-V Processor Simulation Commands
+
+To run your simulation, follow these steps in your terminal (PowerShell or Command Prompt):
+
+1. COMPILATION
+   Run this to check for syntax errors and build the simulation file:
+   iverilog -o sim_output singlecycleprocessorcombined.txt singlecycletb.txt
+
+2. EXECUTION
+   Run this to execute the simulation and see the results in your terminal:
+   vvp sim_output
+
+3. VIEW WAVEFORMS (Optional)
+   If you have GTKWave installed, run this to see the signal timing:
+   gtkwave single_cycle_processor.vcd
+
+-------------------------------------------------------
+NOTES:
+- singlecycleprocessorcombined.txt: Contains all your CPU design modules.
+- singlecycletb.txt: Contains your simplified testbench.
+- If you make changes to the code, you MUST run the 'Compilation' command again before 'Execution'.
+-------------------------------------------------------

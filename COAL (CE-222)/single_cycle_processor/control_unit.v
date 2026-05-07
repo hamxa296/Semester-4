@@ -6,8 +6,6 @@ module control_unit(
     output reg       mem_read,
     output reg       mem_write,
     output reg       branch,
-    output reg       jump,
-    output reg       jal,
     output reg [1:0] alu_op
 );
 
@@ -18,26 +16,30 @@ module control_unit(
         mem_read   = 1'b0;
         mem_write  = 1'b0;
         branch     = 1'b0;
-        jump       = 1'b0;
-        jal        = 1'b0;
         alu_op     = 2'b00;
 
         case (opcode)
-            7'b0110011: begin
+            7'b0110011: begin // R-type
                 reg_write = 1'b1;
                 alu_op    = 2'b10;
             end
-            7'b0010011: begin
+            7'b0000011: begin // Load (lw)
                 alu_src    = 1'b1;
+                mem_read   = 1'b1;
+                mem_to_reg = 1'b1;
                 reg_write  = 1'b1;
                 alu_op     = 2'b00;
             end
-            7'b1100011: begin
+            7'b0100011: begin // Store (sw)
+                alu_src    = 1'b1;
+                mem_write  = 1'b1;
+                alu_op     = 2'b00;
+            end
+            7'b1100011: begin // Branch (beq)
                 branch = 1'b1;
                 alu_op = 2'b01;
             end
             default: begin
-                // keep safe no-op defaults
             end
         endcase
     end

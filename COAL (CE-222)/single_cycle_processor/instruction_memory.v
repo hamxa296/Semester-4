@@ -59,50 +59,35 @@ module instruction_memory(
             for (i = 0; i < 64; i = i + 1)
                 memory[i] = 8'h00;
 
-            memory[0]  = 8'h93;
-            memory[1]  = 8'h00;
-            memory[2]  = 8'h50;
-            memory[3]  = 8'h00;
-
-            memory[4]  = 8'h13;
-            memory[5]  = 8'h01;
-            memory[6]  = 8'hA0;
-            memory[7]  = 8'h00;
-
-            memory[8]  = 8'hB3;
-            memory[9]  = 8'h81;
-            memory[10] = 8'h20;
-            memory[11] = 8'h00;
-
-            memory[12] = 8'h33;
-            memory[13] = 8'h02;
-            memory[14] = 8'h11;
-            memory[15] = 8'h40;
-
-            memory[16] = 8'hB3;
-            memory[17] = 8'hF2;
-            memory[18] = 8'h20;
-            memory[19] = 8'h00;
-
-            memory[20] = 8'h33;
-            memory[21] = 8'hE3;
-            memory[22] = 8'h20;
-            memory[23] = 8'h00;
-
-            memory[24] = 8'h63;
-            memory[25] = 8'h86;
-            memory[26] = 8'h40;
-            memory[27] = 8'h00;
-
-            memory[28] = 8'h93;
-            memory[29] = 8'h03;
-            memory[30] = 8'h10;
-            memory[31] = 8'h00;
-
-            memory[32] = 8'h93;
-            memory[33] = 8'h03;
-            memory[34] = 8'h20;
-            memory[35] = 8'h00;
+            // 0: lw x1, 0(x0)     (x1 = 10)
+            memory[0]  = 8'h83; memory[1] = 8'h20; memory[2] = 8'h00; memory[3] = 8'h00;
+            
+            // 4: lw x2, 4(x0)     (x2 = 20)
+            memory[4]  = 8'h03; memory[5] = 8'h21; memory[6] = 8'h40; memory[7] = 8'h00;
+            
+            // 8: add x3, x1, x2   (x3 = 30)
+            memory[8]  = 8'hB3; memory[9] = 8'h81; memory[10] = 8'h20; memory[11] = 8'h00;
+            
+            // 12: sub x4, x2, x1  (x4 = 10)
+            memory[12] = 8'h33; memory[13] = 8'h02; memory[14] = 8'h11; memory[15] = 8'h40;
+            
+            // 16: sw x3, 8(x0)    (mem[8] = 30)
+            memory[16] = 8'h23; memory[17] = 8'h24; memory[18] = 8'h30; memory[19] = 8'h00;
+            
+            // 20: and x5, x3, x4  (x5 = 30 & 10 = 10)
+            memory[20] = 8'hB3; memory[21] = 8'hF2; memory[22] = 8'h41; memory[23] = 8'h00;
+            
+            // 24: or x6, x3, x4   (x6 = 30 | 10 = 30)
+            memory[24] = 8'h33; memory[25] = 8'hE3; memory[26] = 8'h41; memory[27] = 8'h00;
+            
+            // 28: beq x4, x1, 8   (if 10 == 10, jump to 36)
+            memory[28] = 8'h63; memory[29] = 8'h04; memory[30] = 8'h12; memory[31] = 8'h00;
+            
+            // 32: sw x1, 12(x0)   (skipped)
+            memory[32] = 8'h23; memory[33] = 8'h26; memory[34] = 8'h10; memory[35] = 8'h00;
+            
+            // 36: sw x2, 16(x0)   (mem[16] = 20)
+            memory[36] = 8'h23; memory[37] = 8'h28; memory[38] = 8'h20; memory[39] = 8'h00;
         end
     endtask
 
@@ -117,20 +102,15 @@ module instruction_memory(
 endmodule
 
 /*
-
-addi x1, x0, 5      # x1 = 5
-addi x2, x0, 10     # x2 = 10
-
-add  x3, x1, x2     # x3 = 15
-sub  x4, x2, x1     # x4 = 5
-and  x5, x1, x2     # x5 = 0 (5 & 10)
-or   x6, x1, x2     # x6 = 15
-
-beq  x1, x4, label  # branch if equal (5 == 5 -> YES)
-
-addi x7, x0, 1      # SHOULD BE SKIPPED
-
-label:
-addi x7, x0, 2      # x7 = 2
-
+    TEST PROGRAM:
+    0:  lw  x1, 0(x0)   # x1 = 10 (from pre-loaded memory)
+    4:  lw  x2, 4(x0)   # x2 = 20 (from pre-loaded memory)
+    8:  add x3, x1, x2  # x3 = 30
+    12: sub x4, x2, x1  # x4 = 10
+    16: sw  x3, 8(x0)   # mem[8] = 30
+    20: and x5, x3, x4  # x5 = 10
+    24: or  x6, x3, x4  # x6 = 30
+    28: beq x4, x1, 8   # if x4(10) == x1(10), jump to 36 (offset 8)
+    32: sw  x1, 12(x0)  # SHOULD BE SKIPPED
+    36: sw  x2, 16(x0)  # mem[16] = 20
 */

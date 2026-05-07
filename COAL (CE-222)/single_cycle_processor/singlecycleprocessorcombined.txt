@@ -1,0 +1,479 @@
+`timescale 1ns / 1ps
+
+module adder(
+    input  wire [31:0] a,
+    input  wire [31:0] b,
+    output wire [31:0] sum
+);
+
+    assign sum = a + b;
+
+endmodule
+module alu_control(
+    input  wire [1:0] alu_op,
+    input  wire [2:0] funct3,
+    input  wire [6:0] funct7,
+    output reg  [3:0] alu_ctrl
+);
+
+    always @(*) begin
+        case (alu_op)
+            2'b00: alu_ctrl = 4'b0010; // lw/sw
+            2'b01: alu_ctrl = 4'b0110; // beq
+            2'b10: begin    //R-type
+                case (funct3)
+                    3'b000: begin // add/sub
+                        if (funct7[5])
+                            alu_ctrl = 4'b0110; // sub
+                        else
+                            alu_ctrl = 4'b0010; // add
+                    end
+                    3'b110: alu_ctrl = 4'b0011; // or
+                    3'b111: alu_ctrl = 4'b0000; // and
+                    default: alu_ctrl = 4'b0010;
+                endcase
+            end
+            default: alu_ctrl = 4'b0010;
+        endcase
+    end
+
+endmodule
+module alu(
+    input  wire [31:0] a,
+    input  wire [31:0] b,
+    input  wire [3:0]  alu_ctrl,
+    output reg  [31:0] result,
+    output reg         zero
+);
+
+    always @(*) begin
+        case (alu_ctrl)
+            4'b0000: result = a & b; // AND
+            4'b0010: result = a + b; // ADD
+            4'b0011: result = a | b; // OR
+            4'b0110: result = a - b; // SUB
+            default: result = 32'd0;
+        endcase
+
+        if (result == 32'd0) begin
+            zero = 1'b1;
+        end else begin
+            zero = 1'b0;
+        end
+    end
+
+endmodule
+module control_unit(
+    input  wire [6:0] opcode,
+    output reg       alu_src,
+    output reg       mem_to_reg,
+    output reg       reg_write,
+    output reg       mem_read,
+    output reg       mem_write,
+    output reg       branch,
+    output reg [1:0] alu_op
+);
+
+    always @(*) begin
+        alu_src    = 1'b0;
+        mem_to_reg = 1'b0;
+        reg_write  = 1'b0;
+        mem_read   = 1'b0;
+        mem_write  = 1'b0;
+        branch     = 1'b0;
+        alu_op     = 2'b00;
+
+        case (opcode)
+            7'b0110011: begin // R-type
+                reg_write = 1'b1;
+                alu_op    = 2'b10;
+            end
+            7'b0000011: begin // Load (lw)
+                alu_src    = 1'b1;
+                mem_read   = 1'b1;
+                mem_to_reg = 1'b1;
+                reg_write  = 1'b1;
+                alu_op     = 2'b00;
+            end
+            7'b0100011: begin // Store (sw)
+                alu_src    = 1'b1;
+                mem_write  = 1'b1;
+                alu_op     = 2'b00;
+            end
+            7'b1100011: begin // Branch (beq)
+                branch = 1'b1;
+                alu_op = 2'b01;
+            end
+            default: begin
+            end
+        endcase
+    end
+
+endmodule
+module data_memory(
+    input clk,
+    input mem_read,
+    input mem_write,
+    input  wire [31:0] addr,
+    input  wire [31:0] write_data,
+    output reg  [31:0] read_data
+);
+
+    reg [31:0] mem [0:255];
+    integer i;
+
+    initial begin
+        for (i = 0; i < 256; i = i + 1)
+            mem[i] = 32'b0;
+            
+        mem[0] = 32'd10; // Value at addr 0
+        mem[1] = 32'd20; // Value at addr 4 (index 1)
+    end
+
+    always @(*) begin
+        if (mem_read) begin
+            read_data = mem[addr[9:2]];
+        end else begin
+            read_data = 32'b0;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (mem_write)
+            mem[addr[9:2]] <= write_data;
+    end
+
+endmodule
+module immediate_generator(
+    input  wire [31:0] instruction,
+    output reg  [31:0] imm
+);
+
+    wire [6:0] opcode = instruction[6:0];
+
+    always @(*) begin
+        case (opcode)
+            7'b0000011: imm = {{20{instruction[31]}}, instruction[31:20]}; // I-type (lw)
+            7'b0100011: imm = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // S-type (sw)
+            7'b1100011: imm = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; // B-type (beq)
+            default:    imm = 32'b0;
+        endcase
+    end
+
+endmodule
+
+
+module instruction_decoder(
+    input  wire [31:0] instruction,
+    output wire [6:0]  opcode,
+    output wire [4:0]  rd,
+    output wire [2:0]  funct3,
+    output wire [4:0]  rs1,
+    output wire [4:0]  rs2,
+    output wire [6:0]  funct7,
+    output wire [31:0] immediate
+);
+
+    assign opcode = instruction[6:0];
+    assign rd = instruction[11:7];
+    assign funct3 = instruction[14:12];
+    assign rs1 = instruction[19:15];
+    assign rs2 = instruction[24:20];
+    assign funct7 = instruction[31:25];
+
+    immediate_generator imm_gen(
+        .instruction(instruction),
+        .imm(immediate)
+    );
+
+endmodule
+
+module instruction_memory(
+    input  wire [31:0] addr,
+    input  wire        reset,
+    output wire [31:0] instruction,
+    output wire [6:0]  opcode,
+    output wire [4:0]  rd,
+    output wire [2:0]  funct3,
+    output wire [4:0]  rs1,
+    output wire [4:0]  rs2,
+    output wire [6:0]  funct7,
+    output wire [31:0] immediate
+);
+
+    reg [7:0] memory [0:63];
+    integer i;
+
+    assign instruction = {memory[addr + 32'd3], memory[addr + 32'd2], memory[addr + 32'd1], memory[addr]};
+
+    instruction_decoder decoder(
+        .instruction(instruction),
+        .opcode(opcode),
+        .rd(rd),
+        .funct3(funct3),
+        .rs1(rs1),
+        .rs2(rs2),
+        .funct7(funct7),
+        .immediate(immediate)
+    );
+
+    task load_program;
+        begin
+            for (i = 0; i < 64; i = i + 1)
+                memory[i] = 8'h00;
+
+            // 0: lw x1, 0(x0)     (x1 = 10)
+            memory[0]  = 8'h83; memory[1] = 8'h20; memory[2] = 8'h00; memory[3] = 8'h00;
+            
+            // 4: lw x2, 4(x0)     (x2 = 20)
+            memory[4]  = 8'h03; memory[5] = 8'h21; memory[6] = 8'h40; memory[7] = 8'h00;
+            
+            // 8: add x3, x1, x2   (x3 = 30)
+            memory[8]  = 8'hB3; memory[9] = 8'h81; memory[10] = 8'h20; memory[11] = 8'h00;
+            
+            // 12: sub x4, x2, x1  (x4 = 10)
+            memory[12] = 8'h33; memory[13] = 8'h02; memory[14] = 8'h11; memory[15] = 8'h40;
+            
+            // 16: sw x3, 8(x0)    (mem[8] = 30)
+            memory[16] = 8'h23; memory[17] = 8'h24; memory[18] = 8'h30; memory[19] = 8'h00;
+            
+            // 20: and x5, x3, x4  (x5 = 30 & 10 = 10)
+            memory[20] = 8'hB3; memory[21] = 8'hF2; memory[22] = 8'h41; memory[23] = 8'h00;
+            
+            // 24: or x6, x3, x4   (x6 = 30 | 10 = 30)
+            memory[24] = 8'h33; memory[25] = 8'hE3; memory[26] = 8'h41; memory[27] = 8'h00;
+            
+            // 28: beq x4, x1, 8   (if 10 == 10, jump to 36)
+            memory[28] = 8'h63; memory[29] = 8'h04; memory[30] = 8'h12; memory[31] = 8'h00;
+            
+            // 32: sw x1, 12(x0)   (skipped)
+            memory[32] = 8'h23; memory[33] = 8'h26; memory[34] = 8'h10; memory[35] = 8'h00;
+            
+            // 36: sw x2, 16(x0)   (mem[16] = 20)
+            memory[36] = 8'h23; memory[37] = 8'h28; memory[38] = 8'h20; memory[39] = 8'h00;
+        end
+    endtask
+
+    initial begin
+        load_program();
+    end
+
+    always @(posedge reset) begin
+        load_program();
+    end
+
+endmodule
+
+/*
+    TEST PROGRAM:
+    0:  lw  x1, 0(x0)   # x1 = 10 (from pre-loaded memory)
+    4:  lw  x2, 4(x0)   # x2 = 20 (from pre-loaded memory)
+    8:  add x3, x1, x2  # x3 = 30
+    12: sub x4, x2, x1  # x4 = 10
+    16: sw  x3, 8(x0)   # mem[8] = 30
+    20: and x5, x3, x4  # x5 = 10
+    24: or  x6, x3, x4  # x6 = 30
+    28: beq x4, x1, 8   # if x4(10) == x1(10), jump to 36 (offset 8)
+    32: sw  x1, 12(x0)  # SHOULD BE SKIPPED
+    36: sw  x2, 16(x0)  # mem[16] = 20
+*/
+module mux2to1 (
+    input   [31:0] in0,
+    input   [31:0] in1,
+    input          sel,
+    output reg  [31:0] out
+);
+
+    always @(*) begin
+        if (sel) begin
+            out = in1;
+        end else begin
+            out = in0;
+        end
+    end
+
+endmodule
+module program_counter(
+    input  wire        clk,
+    input  wire        reset,
+    input  wire [31:0] next_pc,
+    output reg  [31:0] pc_out
+);
+
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            pc_out <= 32'b0;
+        else
+            pc_out <= next_pc;
+    end
+
+endmodule
+module register_file(
+    input  wire        clk,
+    input  wire        reset,
+    input  wire        reg_write,
+    input  wire [4:0]  read_reg1,
+    input  wire [4:0]  read_reg2,
+    input  wire [4:0]  write_reg,
+    input  wire [31:0] write_data,
+    output wire [31:0] read_data1,
+    output wire [31:0] read_data2
+);
+
+    reg [31:0] registers [0:31];
+    integer i;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            for (i = 0; i < 32; i = i + 1)
+                registers[i] <= 32'b0;
+        end else begin
+            if (reg_write && (write_reg != 5'b00000))
+                registers[write_reg] <= write_data;
+
+            registers[0] <= 32'b0;
+        end
+    end
+
+    assign read_data1 = registers[read_reg1];
+    assign read_data2 = registers[read_reg2];
+
+endmodule
+
+module single_cycle_processor(
+    input          clk,
+    input          reset,
+    output  [31:0] pc_out,
+    output  [31:0] instruction,
+    output  [31:0] alu_result,
+    output  [31:0] read_data,
+    output         zero_flag
+);
+
+    wire [31:0] pc_next;
+    wire [31:0] pc_plus_4;
+    wire [31:0] branch_target;
+    wire [31:0] imm;
+    wire [6:0]  opcode;
+    wire [4:0]  rd;
+    wire [2:0]  funct3;
+    wire [4:0]  rs1;
+    wire [4:0]  rs2;
+    wire [6:0]  funct7;
+    wire [31:0] alu_input_b;
+    wire [31:0] write_back_data;
+    wire [31:0] read_data1;
+    wire [31:0] read_data2;
+    wire [3:0]  alu_ctrl;
+    wire        alu_src;
+    wire        mem_to_reg;
+    wire        reg_write;
+    wire        mem_read;
+    wire        mem_write;
+    wire        branch;
+    wire [1:0]  alu_op;
+    wire        branch_taken;
+
+    program_counter pc(
+        .clk(clk),
+        .reset(reset),
+        .next_pc(pc_next),
+        .pc_out(pc_out)
+    );
+
+    instruction_memory imem(
+        .addr(pc_out),
+        .reset(reset),
+        .instruction(instruction),
+        .opcode(opcode),
+        .rd(rd),
+        .funct3(funct3),
+        .rs1(rs1),
+        .rs2(rs2),
+        .funct7(funct7),
+        .immediate(imm)
+    );
+
+    adder pc_adder(
+        .a(pc_out),
+        .b(32'd4),
+        .sum(pc_plus_4)
+    );
+
+    control_unit ctrl(
+        .opcode(opcode),
+        .alu_src(alu_src),
+        .mem_to_reg(mem_to_reg),
+        .reg_write(reg_write),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .branch(branch),
+        .alu_op(alu_op)
+    );
+
+    register_file regs(
+        .clk(clk),
+        .reset(reset),
+        .reg_write(reg_write),
+        .read_reg1(rs1),
+        .read_reg2(rs2),
+        .write_reg(rd),
+        .write_data(write_back_data),
+        .read_data1(read_data1),
+        .read_data2(read_data2)
+    );
+
+    adder target_adder(
+        .a(pc_out),
+        .b(imm),
+        .sum(branch_target)
+    );
+
+    assign branch_taken = branch & zero_flag;
+
+    mux2to1 branch_mux(
+        .in0(pc_plus_4),
+        .in1(branch_target),
+        .sel(branch_taken),
+        .out(pc_next)
+    );
+
+    mux2to1 alu_src_mux(
+        .in0(read_data2),
+        .in1(imm),
+        .sel(alu_src),
+        .out(alu_input_b)
+    );
+
+    alu_control aluctrl(
+        .alu_op(alu_op),
+        .funct3(funct3),
+        .funct7(funct7),
+        .alu_ctrl(alu_ctrl)
+    );
+
+    alu main_alu(
+        .a(read_data1),
+        .b(alu_input_b),
+        .alu_ctrl(alu_ctrl),
+        .result(alu_result),
+        .zero(zero_flag)
+    );
+
+    data_memory dmem(
+        .clk(clk),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .addr(alu_result),
+        .write_data(read_data2),
+        .read_data(read_data)
+    );
+
+    mux2to1 mem_to_reg_mux(
+        .in0(alu_result),
+        .in1(read_data),
+        .sel(mem_to_reg),
+        .out(write_back_data)
+    );
+
+endmodule

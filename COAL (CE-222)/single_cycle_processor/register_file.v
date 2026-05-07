@@ -25,7 +25,7 @@ module register_file(
         end
     end
 
-    assign read_data1 = (read_reg1 == 5'b00000) ? 32'b0 : registers[read_reg1];
-    assign read_data2 = (read_reg2 == 5'b00000) ? 32'b0 : registers[read_reg2];
+    assign read_data1 = registers[read_reg1];
+    assign read_data2 = registers[read_reg2];
 
 endmodule

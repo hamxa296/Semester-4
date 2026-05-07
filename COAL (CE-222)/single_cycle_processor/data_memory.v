@@ -4,7 +4,7 @@ module data_memory(
     input mem_write,
     input  wire [31:0] addr,
     input  wire [31:0] write_data,
-    output wire [31:0] read_data
+    output reg  [31:0] read_data
 );
 
     reg [31:0] mem [0:255];
@@ -13,9 +13,18 @@ module data_memory(
     initial begin
         for (i = 0; i < 256; i = i + 1)
             mem[i] = 32'b0;
+            
+        mem[0] = 32'd10; // Value at addr 0
+        mem[1] = 32'd20; // Value at addr 4 (index 1)
     end
 
-    assign read_data = (mem_read) ? mem[addr[9:2]] : 32'b0;
+    always @(*) begin
+        if (mem_read) begin
+            read_data = mem[addr[9:2]];
+        end else begin
+            read_data = 32'b0;
+        end
+    end
 
     always @(posedge clk) begin
         if (mem_write)
