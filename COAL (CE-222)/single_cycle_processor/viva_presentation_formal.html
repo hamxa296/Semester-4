@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISC-V Processor Presentation - Academic Version</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #fdfaf5;
+            --text-color: #3e2723;
+            --accent-blue: #8d6e63;
+            --accent-navy: #4e342e;
+            --card-bg: #ffffff;
+            --border-color: #d7ccc8;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Subtle Technical Background */
+        .tech-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-color) 0.5px, transparent 0.5px),
+                linear-gradient(90deg, var(--border-color) 0.5px, transparent 0.5px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* Presentation Container */
+        .slider {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            min-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 80px;
+            box-sizing: border-box;
+            opacity: 0.1;
+            transition: opacity 0.4s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* Content Styles */
+        h1 {
+            font-size: 3rem;
+            color: var(--accent-navy);
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            color: var(--accent-blue);
+            margin-bottom: 40px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h2::before {
+            content: '';
+            width: 8px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: fit-content;
+            max-width: 90%;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            font-size: 1.15rem;
+            line-height: 1.8;
+        }
+
+        li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .code-block {
+            background: #2b1d1a;
+            color: #efebe9;
+            padding: 24px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.2);
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 55vh;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        /* Controls */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--accent-navy);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .slide-number {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #f1f5f9;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        .header-meta {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .split-container {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .highlight {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="tech-bg"></div>
+    <div class="header-meta">COAL (CE-222)</div>
+
+    <div class="slider" id="slider">
+        <!-- Slide 1: Title -->
+        <div class="slide active" style="justify-content: center;">
+            <p style="color: var(--accent-blue); font-weight: 600; margin-bottom: 10px; letter-spacing: 0.05em;">DESIGN & IMPLEMENTATION</p>
+            <h1>Single-Cycle RISC-V Processor</h1>
+            <p style="font-size: 1.25rem; color: #64748b; margin-top: 15px;">A functional hardware description in Verilog HDL</p>
+            
+            <div style="margin-top: 60px; border-top: 1px solid var(--border-color); padding-top: 30px;">
+                <p style="margin: 0; font-weight: 600;">Hamza Arif</p>
+                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.95rem;">Registration No: 2024206 | Section: CE-222L</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Overview -->
+        <div class="slide">
+            <h2>Project Overview</h2>
+            <div class="card">
+                <ul>
+                    <li>Development of a <span class="highlight">32-bit RISC-V CPU core</span>.</li>
+                    <li>Implementation based on the <span class="highlight">Single-Cycle design methodology</span>.</li>
+                    <li>Execution of a custom 7-instruction subset of the RV32I ISA.</li>
+                    <li>Verified through hardware-level simulation and timing analysis.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Architecture -->
+        <div class="slide">
+            <h2>Processor Architecture</h2>
+            <div class="split-container">
+                <div style="flex: 1;">
+                    <div class="card">
+                        <p style="font-weight: 600; margin-top: 0;">Key Modules:</p>
+                        <ul style="font-size: 1rem;">
+                            <li><span class="highlight">IF:</span> PC & Instruction Memory</li>
+                            <li><span class="highlight">ID:</span> Decoder & Register File</li>
+                            <li><span class="highlight">EX:</span> ALU & Immediate Generator</li>
+                            <li><span class="highlight">MEM:</span> Data Memory Interface</li>
+                            <li><span class="highlight">WB:</span> Result Multiplexing</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="flex: 1.5; text-align: center;">
+                    <img src="architecture.png" alt="Architecture Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Execution Stages -->
+        <div class="slide">
+            <h2>Single-Cycle Execution Flow</h2>
+            <div class="card" style="width: 100%; box-sizing: border-box;">
+                <p>Every instruction follows a deterministic path from Fetch to Write-back within <span class="highlight">one clock period</span>.</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 40px; text-align: center;">
+                    <div style="flex: 1; border-right: 1px solid var(--border-color);">
+                        <p class="highlight" style="margin-bottom: 5px;">Fetch</p>
+                        <p style="font-size: 0.9rem; color: #64748b;">Instruction Memory</p>
+                    </div>
+                    <div style="flex: 1; border-right: 1px solid var(--border-color);">
+                        <p class="highlight" style="margin-bottom: 5px;">Decode</p>
+                        <p style="font-size: 0.9rem; color: #64748b;">Control Logic</p>
+                    </div>
+                    <div style="flex: 1; border-right: 1px solid var(--border-color);">
+                        <p class="highlight" style="margin-bottom: 5px;">Execute</p>
+                        <p style="font-size: 0.9rem; color: #64748b;">ALU Operation</p>
+                    </div>
+                    <div style="flex: 1; border-right: 1px solid var(--border-color);">
+                        <p class="highlight" style="margin-bottom: 5px;">Memory</p>
+                        <p style="font-size: 0.9rem; color: #64748b;">Data Access</p>
+                    </div>
+                    <div style="flex: 1;">
+                        <p class="highlight" style="margin-bottom: 5px;">WB</p>
+                        <p style="font-size: 0.9rem; color: #64748b;">Reg Update</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Test Program -->
+        <div class="slide">
+            <h2>Verification Program</h2>
+            <div class="split-container">
+                <div style="flex: 1.2;">
+                    <div class="code-block">
+lw  x1, 0(x0)   // Initial Load
+lw  x2, 4(x0)   // Initial Load
+add x3, x1, x2  // Arithmetic
+sub x4, x2, x1  // Arithmetic
+sw  x3, 8(x0)   // Data Store
+and x5, x3, x4  // Logical
+or  x6, x3, x4  // Logical
+beq x4, x1, 8   // Control Flow
+sw  x2, 16(x0)  // Final State
+                    </div>
+                </div>
+                <div style="flex: 0.8;">
+                    <div class="card">
+                        <p style="font-weight: 600; margin: 0;">Instruction Subset:</p>
+                        <ul style="font-size: 0.95rem; margin-top: 15px;">
+                            <li><span class="highlight">R-Type:</span> add, sub, and, or</li>
+                            <li><span class="highlight">I-Type:</span> lw</li>
+                            <li><span class="highlight">S-Type:</span> sw</li>
+                            <li><span class="highlight">B-Type:</span> beq</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Results -->
+        <div class="slide">
+            <h2>Simulation Trace</h2>
+            <div class="split-container">
+                <div style="flex: 1;">
+                    <p style="font-weight: 600; color: #64748b;">Final Register Values:</p>
+                    <div class="code-block">
+x1 = 10 (Target)
+x2 = 20 (Target)
+x3 = 30 (Verified)
+x4 = 10 (Verified)
+x5 = 10 (Verified)
+x6 = 30 (Verified)
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <p style="font-weight: 600; color: #64748b;">Memory Integrity:</p>
+                    <div class="code-block">
+Mem[8]  = 30 (Correct)
+Mem[16] = 20 (Correct)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Waveform -->
+        <div class="slide">
+            <h2>Timing Verification (Waveform)</h2>
+            <div style="text-align: center;">
+                <img src="waveform.png" alt="Simulation Waveform">
+                <p style="margin-top: 20px; color: #64748b; font-size: 0.95rem;">Asynchronous reset verification and signal stabilization within the clock period.</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Conclusion -->
+        <div class="slide">
+            <h2>Summary and Conclusion</h2>
+            <div class="card">
+                <ul>
+                    <li>Successful logic synthesis for a subset of the RISC-V ISA.</li>
+                    <li>Validation of the single-cycle datapath with a 100% pass rate.</li>
+                    <li>Correct handling of PC-relative branching and memory addressing.</li>
+                    <li>Efficient hardware utilization through instruction format optimization.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: End -->
+        <div class="slide" style="justify-content: center; align-items: center; text-align: center;">
+            <h1 style="font-size: 4rem; opacity: 0.8;">Thank You</h1>
+            <p style="color: var(--accent-blue); font-weight: 600; margin-top: 20px;">Questions and Discussion</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="slide-number" id="slideNumber">1 / 9</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="btn-group">
+            <button onclick="prevSlide()">Previous</button>
+            <button onclick="nextSlide()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const slider = document.getElementById('slider');
+        const progressBar = document.getElementById('progressBar');
+        const slideNumber = document.getElementById('slideNumber');
+
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            slideNumber.innerText = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlider();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateSlider();
+    </script>
+</body>
+</html>

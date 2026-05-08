@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISC-V Processor Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;500&display=swap');
+
+        :root {
+            --bg-color: #050a10;
+            --accent-cyan: #00f2ff;
+            --accent-green: #39ff14;
+            --text-color: #e0e0e0;
+            --card-bg: rgba(16, 25, 35, 0.8);
+            --glow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animated Grid Background */
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; }
+        }
+
+        /* Presentation Container */
+        .slider {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        .slide {
+            min-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+            opacity: 0.1;
+            transition: opacity 0.5s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* Content Styles */
+        h1 {
+            font-size: 3.5rem;
+            color: var(--accent-cyan);
+            text-shadow: var(--glow);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--accent-green);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            width: 80%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: var(--glow);
+            max-width: 80%;
+            backdrop-filter: blur(5px);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        li::before {
+            content: "> ";
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .code-block {
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            border-left: 5px solid var(--accent-cyan);
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 50vh;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: var(--glow);
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: var(--glow);
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: var(--accent-cyan);
+            transition: width 0.3s ease;
+            z-index: 101;
+        }
+
+        .info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .split-view {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-grid"></div>
+    <div class="info">RISC-V CORE | VIVA MODE</div>
+
+    <div class="slider" id="slider">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1 style="font-size: 4rem;">RISC-V PROCESSOR</h1>
+            <h3 style="color: var(--accent-green); margin-top: 0;">32-Bit Single-Cycle Architecture</h3>
+            <div class="card" style="margin-top: 50px; text-align: center;">
+                <p style="font-size: 1.5rem;">Presenter: <span class="highlight">Hamza Arif</span></p>
+                <p>Registration No: 2024206 | CE-222L</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Project Overview -->
+        <div class="slide">
+            <h2>PROJECT OVERVIEW</h2>
+            <div class="card">
+                <ul>
+                    <li>Designed a <span class="highlight">32-bit single-cycle RISC-V processor</span></li>
+                    <li>Supports a fundamental subset of RV32I instructions</li>
+                    <li>Implemented using <span class="highlight">Verilog HDL</span></li>
+                    <li>Achieves <span class="highlight">CPI = 1</span> (Every instruction in one clock cycle)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Architecture -->
+        <div class="slide">
+            <h2>PROCESSOR ARCHITECTURE</h2>
+            <div class="split-view">
+                <div class="card" style="width: 40%;">
+                    <ul>
+                        <li>Program Counter</li>
+                        <li>Instruction Memory</li>
+                        <li>Register File</li>
+                        <li>ALU & Control Unit</li>
+                        <li>Data Memory</li>
+                        <li>Imm Generator</li>
+                    </ul>
+                </div>
+                <div style="width: 50%; text-align: center;">
+                    <img src="architecture.png" alt="Architecture Diagram">
+                    <p style="font-size: 0.8rem;">Data Path & Control Flow Visualization</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Single-Cycle Concept -->
+        <div class="slide">
+            <h2>EXECUTION PIPELINE (SINGLE CYCLE)</h2>
+            <div class="card" style="font-size: 2rem; padding: 50px; text-align: center;">
+                <span class="highlight">FETCH</span> &rarr; 
+                <span style="color: #fff;">DECODE</span> &rarr; 
+                <span class="highlight">EXECUTE</span> &rarr; 
+                <span style="color: #fff;">MEM</span> &rarr; 
+                <span class="highlight">WB</span>
+            </div>
+            <div class="card" style="margin-top: 30px;">
+                <p>The clock period is determined by the <span style="color: var(--accent-green);">longest path</span> (typically the LW instruction).</p>
+            </div>
+        </div>
+
+        <!-- Slide 5: LW Instruction -->
+        <div class="slide">
+            <h2>EXAMPLE: THE LOAD (LW) INSTRUCTION</h2>
+            <div class="card">
+                <div class="code-block">lw x1, 0(x0)</div>
+                <ul style="margin-top: 20px;">
+                    <li>Fetch instruction from Address 0</li>
+                    <li>Decode Opcode and read Base Register (x0)</li>
+                    <li>ALU computes Address: <span class="highlight">x0 + Offset</span></li>
+                    <li>Data Memory reads value from that Address</li>
+                    <li>Write-Back: Value stored into <span class="highlight">x1</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 6: Test Program -->
+        <div class="slide">
+            <h2>TEST PROGRAM (ASSEMBLY)</h2>
+            <div class="code-block" style="font-size: 1.2rem; width: 60%;">
+lw  x1, 0(x0)   // Load 10
+lw  x2, 4(x0)   // Load 20
+add x3, x1, x2  // x3 = 30
+sub x4, x2, x1  // x4 = 10
+sw  x3, 8(x0)   // Store 30 at addr 8
+and x5, x3, x4  // x5 = 10
+or  x6, x3, x4  // x6 = 30
+beq x4, x1, 8   // Jump if equal (Taken)
+sw  x1, 12(x0)  // [SKIPPED]
+sw  x2, 16(x0)  // Final store
+            </div>
+        </div>
+
+        <!-- Slide 7: Trace Part 1 -->
+        <div class="slide">
+            <h2>EXECUTION TRACE: INITIAL STATE</h2>
+            <div class="card">
+                <p>Starting with all Registers at <span class="highlight">0</span></p>
+                <div class="code-block">
+Memory[0] = 10
+Memory[4] = 20
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Trace Part 2 -->
+        <div class="slide">
+            <h2>EXECUTION TRACE: RESULTS</h2>
+            <div class="split-view">
+                <div class="card">
+                    <p class="highlight">Register File Updates:</p>
+                    <div class="code-block">
+x1 = 10
+x2 = 20
+x3 = 30 (10 + 20)
+x4 = 10 (20 - 10)
+x5 = 10 (30 & 10)
+x6 = 30 (30 | 10)
+                    </div>
+                </div>
+                <div class="card">
+                    <p class="highlight">Memory & Branch:</p>
+                    <div class="code-block">
+Mem[8] = 30
+BEQ (10==10) -> TAKEN
+Jump to PC 36
+Mem[16] = 20
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Waveform -->
+        <div class="slide">
+            <h2>WAVEFORM VERIFICATION</h2>
+            <img src="waveform.png" alt="GTKWave Verification" style="max-height: 60vh;">
+            <p class="card" style="margin-top: 10px;">Simulation confirms <span class="highlight">Single-Cycle</span> timing and correct signal propagation.</p>
+        </div>
+
+        <!-- Slide 10: Conclusion -->
+        <div class="slide">
+            <h2>CONCLUSION</h2>
+            <div class="card">
+                <ul>
+                    <li>Successfully implemented a <span class="highlight">subset of 7 RV32I instructions</span></li>
+                    <li>Verified hardware logic using <span class="highlight">Icarus Verilog</span></li>
+                    <li>Designed modular components for scalability</li>
+                    <li>Demonstrated foundational concepts of <span class="highlight">Computer Architecture</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 11: End -->
+        <div class="slide">
+            <h1 style="font-size: 5rem;">THANK YOU</h1>
+            <p style="color: var(--accent-cyan);">Questions?</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevSlide()">PREV</button>
+        <button onclick="nextSlide()">NEXT</button>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const slider = document.getElementById('slider');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlider();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Initialize
+        updateSlider();
+    </script>
+</body>
+</html>

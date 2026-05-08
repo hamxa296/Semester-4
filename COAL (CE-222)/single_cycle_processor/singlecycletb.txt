@@ -10,6 +10,9 @@ module single_cycle_processor_tb;
     wire [31:0] alu_result;
     wire [31:0] read_data;
     wire        zero_flag;
+    wire [4:0]  rs1;
+    wire [4:0]  rs2;
+    wire [4:0]  rd;
 
     single_cycle_processor uut (
         .clk(clk),
@@ -18,7 +21,10 @@ module single_cycle_processor_tb;
         .instruction(instruction),
         .alu_result(alu_result),
         .read_data(read_data),
-        .zero_flag(zero_flag)
+        .zero_flag(zero_flag),
+        .rs1(rs1),
+        .rs2(rs2),
+        .rd(rd)
     );
 
     initial begin
@@ -77,14 +83,14 @@ module single_cycle_processor_tb;
 
     initial begin
         $display("\n[SIMULATION TRACE]");
-        $display("-------------------------------------------------------");
-        $display(" Time |  PC  | Instruction | Mnemonic | ALU Out | Zero");
-        $display("-------------------------------------------------------");
+        $display("-------------------------------------------------------------------------");
+        $display(" Time |  PC  | Instruction | Mnemonic | rs1 | rs2 |  rd | ALU Out | Zero");
+        $display("-------------------------------------------------------------------------");
         forever begin
             @(negedge clk);
             if (instruction != 32'h0 && instruction !== 32'hx) begin
-                $display(" %4t |  %h |  %h |   %-5s  | %h |  %b", 
-                         $time, pc_out, instruction, mnemonic, alu_result, zero_flag);
+                $display(" %4t |  %h |  %h |   %-5s  |  %2d |  %2d |  %2d | %h |  %b", 
+                         $time, pc_out, instruction, mnemonic, rs1, rs2, rd, alu_result, zero_flag);
             end
         end
     end

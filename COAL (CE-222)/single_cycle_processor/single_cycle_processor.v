@@ -5,7 +5,10 @@ module single_cycle_processor(
     output  [31:0] instruction,
     output  [31:0] alu_result,
     output  [31:0] read_data,
-    output         zero_flag
+    output         zero_flag,
+    output  [4:0]  rs1,
+    output  [4:0]  rs2,
+    output  [4:0]  rd
 );
 
     wire [31:0] pc_next;
@@ -13,10 +16,7 @@ module single_cycle_processor(
     wire [31:0] branch_target;
     wire [31:0] imm;
     wire [6:0]  opcode;
-    wire [4:0]  rd;
     wire [2:0]  funct3;
-    wire [4:0]  rs1;
-    wire [4:0]  rs2;
     wire [6:0]  funct7;
     wire [31:0] alu_input_b;
     wire [31:0] write_back_data;
