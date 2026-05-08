@@ -7,9 +7,9 @@ module immediate_generator(
 
     always @(*) begin
         case (opcode)
-            7'b0000011: imm = {{20{instruction[31]}}, instruction[31:20]}; // I-type (lw)
-            7'b0100011: imm = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // S-type (sw)
-            7'b1100011: imm = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; // B-type (beq)
+            7'b0000011: imm = {{20{instruction[31]}}, instruction[31:20]}; //  lw
+            7'b0100011: imm = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // sw
+            7'b1100011: imm = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; // beq
             default:    imm = 32'b0;
         endcase
     end

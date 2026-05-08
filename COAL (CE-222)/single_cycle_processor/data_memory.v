@@ -14,8 +14,8 @@ module data_memory(
         for (i = 0; i < 256; i = i + 1)
             mem[i] = 32'b0;
             
-        mem[0] = 32'd10; // Value at addr 0
-        mem[1] = 32'd20; // Value at addr 4 (index 1)
+        mem[0] = 32'd10; //
+        mem[1] = 32'd20; //  1)
     end
 
     always @(*) begin

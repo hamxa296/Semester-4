@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>K-Means Clustering Presentation</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+
+  --bg:#fdfdfc;
+  --surface:#ffffff;
+
+  --text-main:#2d3142;
+  --text-muted:#6e768b;
+
+  --border:#e2e4eb;
+
+  --accent:#4a5d85;
+  --accent-light:#f0f2f5;
+
+  --green:#2f9e7d;
+  --red:#d65b5b;
+
+  --font-serif:'Lora', serif;
+  --font-sans:'Inter', sans-serif;
+  --font-mono:'Fira Code', monospace;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text-main);
+  font-family:var(--font-sans);
+  overflow:hidden;
+  line-height:1.6;
+}
+
+h1,h2,h3{
+  font-family:var(--font-serif);
+  font-weight:500;
+}
+
+#deck{
+  display:flex;
+  width:100vw;
+  height:100vh;
+  transition:transform .6s cubic-bezier(.65,0,.15,1);
+}
+
+.slide{
+  min-width:100vw;
+  height:100vh;
+
+  padding:3rem 4rem;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  opacity:0;
+  transition:opacity .5s ease;
+}
+
+.slide.active{
+  opacity:1;
+}
+
+.slide-content{
+
+  width:100%;
+  max-width:1200px;
+  height:85vh;
+
+  background:var(--surface);
+
+  border:1px solid var(--border);
+
+  box-shadow:0 10px 40px rgba(0,0,0,.03);
+
+  padding:3rem 4rem;
+
+  display:flex;
+  flex-direction:column;
+
+  position:relative;
+}
+
+.slide-header{
+
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+
+  border-bottom:1px solid var(--border);
+
+  padding-bottom:1rem;
+  margin-bottom:2rem;
+}
+
+.slide-title{
+  font-size:2.2rem;
+}
+
+.slide-meta{
+  font-size:.85rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--text-muted);
+}
+
+.hero{
+  flex:1;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.hero-subtitle{
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  color:var(--accent);
+  font-weight:600;
+
+  margin-bottom:1.5rem;
+}
+
+.hero-title{
+  font-size:4rem;
+  line-height:1.1;
+
+  margin-bottom:1.5rem;
+}
+
+.hero-desc{
+  font-size:1.2rem;
+  color:var(--text-muted);
+
+  max-width:700px;
+
+  margin-bottom:3rem;
+}
+
+.hero-author{
+  border-top:1px solid var(--border);
+  padding-top:1.5rem;
+
+  display:inline-block;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3rem;
+
+  flex:1;
+}
+
+.col{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+p{
+  font-size:1.05rem;
+  margin-bottom:1rem;
+}
+
+ul{
+  margin-left:1.5rem;
+  color:var(--text-muted);
+}
+
+li{
+  margin-bottom:.6rem;
+}
+
+strong{
+  color:var(--text-main);
+}
+
+.math-block{
+
+  background:var(--accent-light);
+
+  border-left:4px solid var(--accent);
+
+  padding:1.3rem;
+
+  margin:1.5rem 0;
+
+  font-size:1.15rem;
+
+  font-family:var(--font-serif);
+  font-style:italic;
+}
+
+.img-box{
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  background:white;
+
+  border:1px solid var(--border);
+
+  padding:1rem;
+
+  height:100%;
+}
+
+.slide-counter{
+
+  position:absolute;
+  bottom:2rem;
+  right:4rem;
+
+  font-size:.85rem;
+
+  color:var(--text-muted);
+
+  font-family:var(--font-mono);
+}
+
+#progress{
+
+  position:fixed;
+
+  top:0;
+  left:0;
+
+  height:3px;
+
+  background:var(--accent);
+
+  z-index:100;
+
+  transition:width .3s ease;
+}
+
+.nav-controls{
+
+  position:fixed;
+
+  bottom:2rem;
+  right:2rem;
+
+  display:flex;
+  gap:.5rem;
+}
+
+.nav-btn{
+
+  width:40px;
+  height:40px;
+
+  border:1px solid var(--border);
+
+  background:white;
+
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+.nav-btn:hover{
+  background:var(--accent-light);
+}
+
+.cluster-svg{
+  width:100%;
+  max-width:450px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="progress"></div>
+
+<div id="deck">
+
+<!-- SLIDE 1 -->
+
+<section class="slide">
+
+<div class="slide-content"
+style="justify-content:center;border-top:4px solid var(--accent);">
+
+<div class="hero">
+
+<div class="hero-subtitle">
+Machine Learning Lecture
+</div>
+
+<h1 class="hero-title">
+K-Means Clustering
+</h1>
+
+<p class="hero-desc">
+
+Understanding clustering, centroid optimization,
+the elbow method, and silhouette analysis for selecting
+the optimal number of clusters.
+
+</p>
+
+<div class="hero-author">
+
+<p><strong>Hamza Arif</strong></p>
+
+<span>Unsupervised Learning</span>
+
+</div>
+
+<span class="slide-counter">
+1 / 9
+</span>
+
+</div>
+
+</section>
+<!-- SLIDE 2 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+Introduction to K-Means
+</h2>
+
+<span class="slide-meta">
+Unsupervised Clustering
+</span>
+
+</div>
+
+<div style="
+display:flex;
+flex-direction:column;
+justify-content:center;
+flex:1;
+max-width:900px;
+margin:auto;
+">
+
+<p style="font-size:1.15rem; line-height:1.9;">
+
+K-Means is an unsupervised machine learning algorithm
+used to divide data into multiple clusters based on similarity.
+Instead of using labeled outputs, the algorithm discovers
+hidden structure directly from the dataset.
+
+</p>
+
+<div class="math-block"
+style="
+font-size:1.25rem;
+margin:2rem 0;
+text-align:center;
+">
+
+Goal: Minimize distance between data points and cluster centroids.
+
+</div>
+
+<ul style="
+font-size:1.08rem;
+line-height:2;
+columns:2;
+column-gap:4rem;
+">
+
+<li>No labeled outputs required</li>
+
+<li>Data partitioned into K groups</li>
+
+<li>Each cluster represented by a centroid</li>
+
+<li>Works using iterative optimization</li>
+
+<li>Groups similar points together</li>
+
+<li>Widely used in real-world ML applications</li>
+
+</ul>
+
+<p style="
+margin-top:2rem;
+font-size:1.05rem;
+color:var(--text-muted);
+line-height:1.8;
+">
+
+Applications include customer segmentation,
+recommendation systems, image compression,
+document clustering, and anomaly detection.
+
+</p>
+
+</div>
+
+<span class="slide-counter">
+2 / 9
+</span>
+
+</div>
+
+</section>
+<!-- SLIDE 2 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+K-Means Clustering
+</h2>
+
+<span class="slide-meta">
+Distance-Based Clustering
+</span>
+
+</div>
+
+<div class="grid-2">
+
+<div class="col">
+
+<p>
+K-Means groups data points according to similarity
+using the distance from cluster centroids.
+</p>
+
+<div class="math-block">
+
+d = √((x - cₓ)² + (y - cᵧ)²)
+
+</div>
+
+<ul>
+
+<li><strong>x</strong> → data point</li>
+
+<li><strong>c</strong> → centroid</li>
+
+<li>Each point assigned to nearest centroid</li>
+
+<li>Centroids updated iteratively</li>
+
+</ul>
+
+<p>
+
+Goal: create compact clusters with minimum internal distance.
+
+</p>
+
+</div>
+
+<div class="col">
+
+<div class="img-box">
+
+<svg class="cluster-svg" viewBox="0 0 400 300">
+
+<!-- cluster 1 -->
+<circle cx="90" cy="80" r="8" fill="#2f9e7d"/>
+<circle cx="110" cy="95" r="8" fill="#2f9e7d"/>
+<circle cx="75" cy="100" r="8" fill="#2f9e7d"/>
+
+<!-- cluster 2 -->
+<circle cx="240" cy="80" r="8" fill="#4a5d85"/>
+<circle cx="260" cy="95" r="8" fill="#4a5d85"/>
+<circle cx="225" cy="105" r="8" fill="#4a5d85"/>
+
+<!-- cluster 3 -->
+<circle cx="180" cy="220" r="8" fill="#d65b5b"/>
+<circle cx="210" cy="240" r="8" fill="#d65b5b"/>
+<circle cx="160" cy="250" r="8" fill="#d65b5b"/>
+
+<!-- centroids -->
+<polygon points="90,60 100,85 75,72 105,72 80,85"
+fill="black"/>
+
+<polygon points="240,60 250,85 225,72 255,72 230,85"
+fill="black"/>
+
+<polygon points="180,190 190,215 165,202 195,202 170,215"
+fill="black"/>
+
+</svg>
+
+</div>
+
+</div>
+
+</div>
+
+<span class="slide-counter">
+3 / 9
+</span>
+
+</div>
+
+</section>
+
+<!-- SLIDE 3 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+K-Means Algorithm
+</h2>
+
+<span class="slide-meta">
+Iterative Optimization
+</span>
+
+</div>
+
+<div class="grid-2">
+
+<div class="col">
+
+<ul>
+
+<li><strong>Step 1:</strong> Choose number of clusters K</li>
+
+<li><strong>Step 2:</strong> Randomly initialize centroids</li>
+
+<li><strong>Step 3:</strong> Assign points to nearest centroid</li>
+
+<li><strong>Step 4:</strong> Update centroids using cluster means</li>
+
+<li><strong>Step 5:</strong> Repeat until convergence</li>
+
+</ul>
+
+</div>
+
+<div class="col">
+
+<div class="img-box">
+
+<img src="kmeans_steps.png"
+style="max-width:100%;max-height:100%;object-fit:contain;">
+
+</div>
+
+</div>
+
+</div>
+
+<span class="slide-counter">
+4 / 9
+</span>
+
+</div>
+
+</section>
+
+<!-- SLIDE 4 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+Choosing the Best K
+</h2>
+
+<span class="slide-meta">
+Elbow Method
+</span>
+
+</div>
+
+<div class="grid-2">
+
+<div class="col">
+
+<p>
+
+Choosing K is extremely important because
+it directly affects cluster quality.
+
+</p>
+
+<ul>
+
+<li>Small K → underfitting</li>
+
+<li>Large K → overfitting</li>
+
+<li>No fixed universal value</li>
+
+</ul>
+
+<div class="math-block">
+
+Optimal K occurs where WCSS reduction slows.
+
+</div>
+
+</div>
+
+<div class="col">
+
+<div class="img-box">
+
+<img src="wcss_iteration_a4.png"
+style="max-width:100%;max-height:100%;object-fit:contain;">
+
+</div>
+
+</div>
+
+</div>
+
+<span class="slide-counter">
+5 / 9
+</span>
+
+</div>
+
+</section>
+
+<!-- SLIDE 5 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+Silhouette Score
+</h2>
+
+<span class="slide-meta">
+Cluster Validation
+</span>
+
+</div>
+
+<div class="grid-2">
+
+<div class="col">
+
+<p>
+
+Silhouette score measures how well a point fits
+within its assigned cluster compared to neighboring clusters.
+
+</p>
+
+<div class="math-block">
+
+s = (b - a) / max(a,b)
+
+</div>
+
+<ul>
+
+<li><strong>a</strong> → intra-cluster distance</li>
+
+<li><strong>b</strong> → nearest cluster distance</li>
+
+<li>Measures cohesion and separation simultaneously</li>
+
+</ul>
+
+</div>
+
+<div class="col">
+
+<ul>
+
+<li><strong>s ≈ 1</strong> → excellent clustering</li>
+
+<li><strong>s ≈ 0</strong> → overlapping clusters</li>
+
+<li><strong>s &lt; 0</strong> → incorrect clustering</li>
+
+</ul>
+
+<div class="math-block">
+
+Higher silhouette score means better cluster quality.
+
+</div>
+
+</div>
+
+</div>
+
+<span class="slide-counter">
+6 / 9
+</span>
+
+</div>
+
+</section>
+
+<!-- SLIDE 6 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+Silhouette Analysis vs K
+</h2>
+
+<span class="slide-meta">
+Validation Graph
+</span>
+
+</div>
+
+<div class="img-box">
+
+<svg width="750" height="420">
+
+<!-- axes -->
+
+<line x1="80" y1="340" x2="650" y2="340"
+stroke="#333" stroke-width="2"/>
+
+<line x1="80" y1="340" x2="80" y2="60"
+stroke="#333" stroke-width="2"/>
+
+<!-- y labels -->
+
+<text x="40" y="340" font-size="14">0.0</text>
+<text x="40" y="285" font-size="14">0.2</text>
+<text x="40" y="230" font-size="14">0.4</text>
+<text x="40" y="175" font-size="14">0.6</text>
+<text x="40" y="120" font-size="14">0.8</text>
+
+<!-- x labels -->
+
+<text x="115" y="370" font-size="14">2</text>
+<text x="215" y="370" font-size="14">3</text>
+<text x="315" y="370" font-size="14">4</text>
+<text x="415" y="370" font-size="14">5</text>
+<text x="515" y="370" font-size="14">6</text>
+
+<!-- graph -->
+
+<polyline
+fill="none"
+stroke="#2f9e7d"
+stroke-width="4"
+points="
+120,260
+220,190
+320,120
+420,145
+520,195
+"/>
+
+<!-- points -->
+
+<circle cx="120" cy="260" r="6" fill="#2f9e7d"/>
+<circle cx="220" cy="190" r="6" fill="#2f9e7d"/>
+<circle cx="320" cy="120" r="6" fill="#2f9e7d"/>
+<circle cx="420" cy="145" r="6" fill="#2f9e7d"/>
+<circle cx="520" cy="195" r="6" fill="#2f9e7d"/>
+
+<!-- label -->
+
+<text x="330" y="95"
+fill="#2d3142"
+font-size="18"
+font-weight="600">
+
+Best K = 4
+
+</text>
+
+<!-- titles -->
+
+<text x="15" y="60"
+font-size="16"
+font-weight="600">
+
+Silhouette Score
+
+</text>
+
+<text x="630" y="390"
+font-size="16"
+font-weight="600">
+
+K
+
+</text>
+
+</svg>
+
+</div>
+
+<span class="slide-counter">
+7 / 9
+</span>
+
+</div>
+
+</section>
+<!-- SLIDE 7 -->
+
+<section class="slide">
+
+<div class="slide-content">
+
+<div class="slide-header">
+
+<h2 class="slide-title">
+Advantages and Limitations
+</h2>
+
+<span class="slide-meta">
+Practical Understanding
+</span>
+
+</div>
+
+<div class="grid-2">
+
+<!-- LEFT -->
+
+<div class="col">
+
+<h3 style="margin-bottom:1rem;color:var(--green);">
+Advantages
+</h3>
+
+<ul>
+
+<li>Simple and easy to implement</li>
+
+<li>Computationally efficient on large datasets</li>
+
+<li>Works well for clearly separated clusters</li>
+
+<li>Fast convergence in most cases</li>
+
+<li>Easy to interpret and visualize</li>
+
+</ul>
+
+<div class="math-block">
+
+K-Means performs best when clusters are compact and spherical.
+
+</div>
+
+</div>
+
+<!-- RIGHT -->
+
+<div class="col">
+
+<h3 style="margin-bottom:1rem;color:var(--red);">
+Limitations
+</h3>
+
+<ul>
+
+<li>Requires predefined K value</li>
+
+<li>Sensitive to centroid initialization</li>
+
+<li>Affected heavily by outliers</li>
+
+<li>Struggles with irregular cluster shapes</li>
+
+<li>May converge to local minima</li>
+
+</ul>
+
+<div class="math-block">
+
+Different initial centroids can produce different clustering results.
+
+</div>
+
+</div>
+
+</div>
+
+<span class="slide-counter">
+8 / 9
+</span>
+
+</div>
+
+</section>
+
+<!-- SLIDE 7 -->
+
+<section class="slide">
+
+<div class="slide-content"
+style="justify-content:center;text-align:center;border-bottom:4px solid var(--accent);">
+
+<h2 style="font-size:3rem;margin-bottom:1rem;">
+
+Thank You
+
+</h2>
+
+<p style="font-size:1.2rem;color:var(--text-muted);">
+
+K-Means Clustering and Model Selection
+
+</p>
+
+<span class="slide-counter">
+9 / 9
+</span>
+
+</div>
+
+</section>
+
+</div>
+
+<div class="nav-controls">
+
+<button class="nav-btn" onclick="move(-1)">
+←
+</button>
+
+<button class="nav-btn" onclick="move(1)">
+→
+</button>
+
+</div>
+
+<script>
+
+let current = 0;
+
+const slides =
+document.querySelectorAll('.slide');
+
+const deck =
+document.getElementById('deck');
+
+const progress =
+document.getElementById('progress');
+
+function update(){
+
+deck.style.transform =
+`translateX(-${current * 100}vw)`;
+
+progress.style.width =
+`${(current/(slides.length-1))*100}%`;
+
+slides.forEach((s,i)=>
+s.classList.toggle('active',i===current));
+
+}
+
+function move(dir){
+
+current = Math.max(
+0,
+Math.min(current + dir, slides.length - 1)
+);
+
+update();
+
+}
+
+document.addEventListener('keydown', e=>{
+
+if(e.key==='ArrowRight' || e.key===' ')
+move(1);
+
+if(e.key==='ArrowLeft')
+move(-1);
+
+});
+
+update();
+
+setTimeout(()=>{
+slides[0].classList.add('active');
+},100);
+
+</script>
+
+</body>
+</html>
