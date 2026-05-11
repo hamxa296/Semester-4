@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import StudyGuide from './database_study_guide';
+import StudyGuide from './CS232L_Study_Guide';
 import MidExamPractice from './CS232L_MidExam_Practice';
 import Practice2 from './CS232L_MidExam_Practice2';
 
