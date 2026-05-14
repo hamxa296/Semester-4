@@ -54,49 +54,39 @@ module instruction_memory(
         .immediate(immediate)
     );
 
-    task load_program;
-        begin
-            for (i = 0; i < 64; i = i + 1)
-                memory[i] = 8'h00;
-
-            // 0: lw x1, 0(x0)     (x1 = 10)
-            memory[0]  = 8'h83; memory[1] = 8'h20; memory[2] = 8'h00; memory[3] = 8'h00;
-            
-            // 4: lw x2, 4(x0)     (x2 = 20)
-            memory[4]  = 8'h03; memory[5] = 8'h21; memory[6] = 8'h40; memory[7] = 8'h00;
-            
-            // 8: add x3, x1, x2   (x3 = 30)
-            memory[8]  = 8'hB3; memory[9] = 8'h81; memory[10] = 8'h20; memory[11] = 8'h00;
-            
-            // 12: sub x4, x2, x1  (x4 = 10)
-            memory[12] = 8'h33; memory[13] = 8'h02; memory[14] = 8'h11; memory[15] = 8'h40;
-            
-            // 16: sw x3, 8(x0)    (mem[8] = 30)
-            memory[16] = 8'h23; memory[17] = 8'h24; memory[18] = 8'h30; memory[19] = 8'h00;
-            
-            // 20: and x5, x3, x4  (x5 = 30 & 10 = 10)
-            memory[20] = 8'hB3; memory[21] = 8'hF2; memory[22] = 8'h41; memory[23] = 8'h00;
-            
-            // 24: or x6, x3, x4   (x6 = 30 | 10 = 30)
-            memory[24] = 8'h33; memory[25] = 8'hE3; memory[26] = 8'h41; memory[27] = 8'h00;
-            
-            // 28: beq x4, x1, 8   (if 10 == 10, jump to 36)
-            memory[28] = 8'h63; memory[29] = 8'h04; memory[30] = 8'h12; memory[31] = 8'h00;
-            
-            // 32: sw x1, 12(x0)   (skipped)
-            memory[32] = 8'h23; memory[33] = 8'h26; memory[34] = 8'h10; memory[35] = 8'h00;
-            
-            // 36: sw x2, 16(x0)   (mem[16] = 20)
-            memory[36] = 8'h23; memory[37] = 8'h28; memory[38] = 8'h20; memory[39] = 8'h00;
-        end
-    endtask
-
     initial begin
-        load_program();
-    end
+        for (i = 0; i < 64; i = i + 1)
+            memory[i] = 8'b00000000;
 
-    always @(posedge reset) begin
-        load_program();
+        // 0: lw x1, 0(x0)     (x1 = 10)
+        memory[0]  = 8'b10000011; memory[1] = 8'b00100000; memory[2] = 8'b00000000; memory[3] = 8'b00000000;
+        
+        // 4: lw x2, 4(x0)     (x2 = 20)
+        memory[4]  = 8'b00000011; memory[5] = 8'b00100001; memory[6] = 8'b01000000; memory[7] = 8'b00000000;
+        
+        // 8: add x3, x1, x2   (x3 = 30)
+        memory[8]  = 8'b10110011; memory[9] = 8'b10000001; memory[10] = 8'b00100000; memory[11] = 8'b00000000;
+        
+        // 12: sub x4, x2, x1  (x4 = 10)
+        memory[12] = 8'b00110011; memory[13] = 8'b00000010; memory[14] = 8'b00010001; memory[15] = 8'b01000000;
+        
+        // 16: sw x3, 8(x0)    (mem[8] = 30)
+        memory[16] = 8'b00100011; memory[17] = 8'b00100100; memory[18] = 8'b00110000; memory[19] = 8'b00000000;
+        
+        // 20: and x5, x3, x4  (x5 = 30 & 10 = 10)
+        memory[20] = 8'b10110011; memory[21] = 8'b11110010; memory[22] = 8'b01000001; memory[23] = 8'b00000000;
+        
+        // 24: or x6, x3, x4   (x6 = 30 | 10 = 30)
+        memory[24] = 8'b00110011; memory[25] = 8'b11100011; memory[26] = 8'b01000001; memory[27] = 8'b00000000;
+        
+        // 28: beq x4, x1, 8   (if 10 == 10, jump to 36)
+        memory[28] = 8'b01100011; memory[29] = 8'b00000100; memory[30] = 8'b00010010; memory[31] = 8'b00000000;
+        
+        // 32: sw x1, 12(x0)   (skipped)
+        memory[32] = 8'b00100011; memory[33] = 8'b00100110; memory[34] = 8'b00010000; memory[35] = 8'b00000000;
+        
+        // 36: sw x2, 16(x0)   (mem[16] = 20)
+        memory[36] = 8'b00100011; memory[37] = 8'b00101000; memory[38] = 8'b00100000; memory[39] = 8'b00000000;
     end
 
 endmodule

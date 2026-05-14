@@ -342,16 +342,17 @@ endmodule
 
 module single_cycle_processor(
     input          clk,
-    input          reset,
-    output  [31:0] pc_out,
-    output  [31:0] instruction,
-    output  [31:0] alu_result,
-    output  [31:0] read_data,
-    output         zero_flag,
-    output  [4:0]  rs1,
-    output  [4:0]  rs2,
-    output  [4:0]  rd
+    input          reset
 );
+
+    wire [31:0] pc_out;
+    wire [31:0] instruction;
+    wire [31:0] alu_result;
+    wire [31:0] read_data;
+    wire        zero_flag;
+    wire [4:0]  rs1;
+    wire [4:0]  rs2;
+    wire [4:0]  rd;
 
     wire [31:0] pc_next;
     wire [31:0] pc_plus_4;

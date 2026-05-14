@@ -510,7 +510,7 @@ header {
       <input class="fill-input" id="sq5b" placeholder="4-bit decimal..." spellcheck="false">
     </div>
     <div class="btn-row">
-      <button class="btn btn-check" onclick="checkFillPair('sq5','8\'bf0','4\'d9','sq5a','sq5b')">CHECK</button>
+      <button class="btn btn-check" onclick="checkFillPair('sq5','8\'b11110000','4\'d9','sq5a','sq5b')">CHECK</button>
     </div>
     <div class="feedback" id="sq5-fb"></div>
   </div>
@@ -593,7 +593,7 @@ header {
   </div>
 
   <!-- CQ1 -->
-  <div class="q-card">
+  <div class="q-card" id="cq1">
     <div class="q-num"><span>CONCEPT · Q01</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">A signal is assigned inside an <code>always @(posedge clk)</code> block. You declare it as <code>wire</code>. What happens?</div>
     <div class="options">
@@ -606,7 +606,7 @@ header {
   </div>
 
   <!-- CQ2 -->
-  <div class="q-card">
+  <div class="q-card" id="cq2">
     <div class="q-num"><span>CONCEPT · Q02</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">You have two signals: <code>a = 4'b1010</code> and <code>b = 4'b0000</code>. What is the result of <code>a &amp;&amp; b</code> vs <code>a &amp; b</code>?</div>
     <div class="options">
@@ -619,7 +619,7 @@ header {
   </div>
 
   <!-- CQ3 -->
-  <div class="q-card">
+  <div class="q-card" id="cq3">
     <div class="q-num"><span>CONCEPT · Q03</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">Why does the JK flip-flop fix the problem with the SR flip-flop?</div>
     <div class="options">
@@ -632,7 +632,7 @@ header {
   </div>
 
   <!-- CQ4 -->
-  <div class="q-card">
+  <div class="q-card" id="cq4">
     <div class="q-num"><span>CONCEPT · Q04</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">You write <code>always @(a, b) begin ... end</code> for a combinational block, but forget to include signal <code>c</code> which is also read inside. What is the consequence?</div>
     <div class="options">
@@ -645,7 +645,7 @@ header {
   </div>
 
   <!-- CQ5 -->
-  <div class="q-card">
+  <div class="q-card" id="cq5">
     <div class="q-num"><span>CONCEPT · Q05</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">Consider this code inside <code>always @(posedge clk)</code>:<br><br>
     <code>a = b + 1;</code><br><code>c = a * 2;</code><br><br>
@@ -662,7 +662,7 @@ header {
   </div>
 
   <!-- CQ6 -->
-  <div class="q-card">
+  <div class="q-card" id="cq6">
     <div class="q-num"><span>CONCEPT · Q06</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">What is the functional difference between <code>initial</code> and <code>always</code>?</div>
     <div class="options">
@@ -675,7 +675,7 @@ header {
   </div>
 
   <!-- CQ7 -->
-  <div class="q-card">
+  <div class="q-card" id="cq7">
     <div class="q-num"><span>CONCEPT · Q07</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">In a testbench, you declare an input to the UUT as <code>wire</code> and try to drive it in an <code>initial</code> block. What happens?</div>
     <div class="options">
@@ -688,7 +688,7 @@ header {
   </div>
 
   <!-- CQ8 -->
-  <div class="q-card">
+  <div class="q-card" id="cq8">
     <div class="q-num"><span>CONCEPT · Q08</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">Can you put two complete and separate module definitions in a single <code>.v</code> file? For example, both your sub-module and your top-level module?</div>
     <div class="options">
@@ -701,7 +701,7 @@ header {
   </div>
 
   <!-- CQ9 -->
-  <div class="q-card">
+  <div class="q-card" id="cq9">
     <div class="q-num"><span>CONCEPT · Q09</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">What does the T flip-flop have in common with the JK flip-flop, structurally?</div>
     <div class="options">
@@ -714,7 +714,7 @@ header {
   </div>
 
   <!-- CQ10 -->
-  <div class="q-card">
+  <div class="q-card" id="cq10">
     <div class="q-num"><span>CONCEPT · Q10</span><span class="q-tag amber">mcq</span></div>
     <div class="q-text">An <code>assign</code> statement is called a "continuous assignment." What exactly does "continuous" mean here?</div>
     <div class="options">
@@ -1157,6 +1157,65 @@ header {
 const scores = { syntax: 0, concept: 0 };
 const answered = new Set();
 
+const answerKey = {
+  sq1: { answer: "module, endmodule", note: "A Verilog design unit is wrapped as: module module_name(...); ... endmodule." },
+  sq2: { answer: "B - x", note: "For built-in gates, the first signal in the port list is the output. In and a1(x, a, b), a1 is only the instance name." },
+  sq3: { answer: "always @(posedge clk or posedge reset)", note: "Both clk and reset appear because reset is asynchronous. The block triggers on a rising clock edge or a rising reset edge." },
+  sq4: { answer: "C - case ({S, R})", note: "Curly braces concatenate S and R into one 2-bit value, so the case items can be 2'b00, 2'b01, 2'b10, and 2'b11." },
+  sq5: { answer: "8'b11110000 or 8'b1111_0000, and 4'd9", note: "Underscores are allowed for readability. The first literal is 8 bits in base binary; the second is 4 bits in base decimal." },
+  sq6: { answer: "C - output reg [31:0] count;", note: "A value assigned inside an always block must be a reg/procedural variable in classic Verilog." },
+  sq7: { answer: "@(*)", note: "This is the safest shorthand for combinational always blocks because it includes every signal read inside the block." },
+  sq8: { answer: "B - always #10 clk = ~clk;", note: "The clock toggles every 10 time units, so a full low-to-high-to-low cycle takes 20 time units." },
+  sq9: { answer: "<= for sequential/clocked logic, = for combinational logic", note: "Use non-blocking assignments in clocked always blocks and blocking assignments in combinational always blocks/testbench stimulus." },
+  sq10: { answer: "C - .clk(system_clk)", note: "The name after the dot is the module's port name. The name inside parentheses is your local signal." },
+  cq1: { answer: "B - Compilation error", note: "A wire cannot be assigned procedurally inside an always block. Use reg for classic Verilog procedural assignments." },
+  cq2: { answer: "B - a && b = 1'b0, a & b = 4'b0000", note: "&& is logical AND, so it reduces each operand to true/false. & is bitwise AND, so it compares each bit position." },
+  cq3: { answer: "C - J=1, K=1 toggles", note: "The SR latch has an invalid/forbidden set-reset combination. JK gives that combination a defined toggle behavior." },
+  cq4: { answer: "C - Incorrect/incomplete sensitivity behavior", note: "If c is read but not in the sensitivity list, simulation can miss updates when c changes. Use @(*) for combinational logic." },
+  cq5: { answer: "B - c = old_a * 2", note: "With non-blocking assignments, every right-hand side is evaluated using the old values, then all left-hand sides update together." },
+  cq6: { answer: "B - initial runs once; always repeats forever", note: "initial is commonly used for testbench setup/stimulus. always is used for repeated behavior such as clocks or hardware processes." },
+  cq7: { answer: "A - Error; testbench-driven UUT inputs must be reg", note: "Signals assigned inside initial or always blocks must be reg in classic Verilog. UUT outputs observed by the testbench are usually wire." },
+  cq8: { answer: "B - Yes, multiple modules can be in one .v file", note: "A Verilog file may contain several module...endmodule definitions. The simulator/project chooses which one is the top." },
+  cq9: { answer: "B - T flip-flop is JK with J and K tied together", note: "When T=0, the flip-flop holds. When T=1, both JK inputs are 1, so it toggles." },
+  cq10: { answer: "C - It updates whenever the RHS changes", note: "A continuous assign keeps the left-hand wire driven by the expression at all times, without a clock or procedural trigger." }
+};
+
+function addAnswerReferences() {
+  Object.entries(answerKey).forEach(([qid, data]) => {
+    const card = document.getElementById(qid);
+    if (!card) return;
+
+    const btnRow = card.querySelector('.btn-row') || card.querySelector('.options');
+    const feedback = document.getElementById(qid + '-fb');
+    if (!btnRow || !feedback || document.getElementById(qid + '-ans')) return;
+
+    const revealBtn = document.createElement('button');
+    revealBtn.className = 'btn btn-reveal';
+    revealBtn.type = 'button';
+    revealBtn.textContent = 'SHOW ANSWER';
+    revealBtn.onclick = () => toggleAnswer(qid + '-ans');
+
+    if (btnRow.classList.contains('options')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'btn-row';
+      wrapper.appendChild(revealBtn);
+      btnRow.insertAdjacentElement('afterend', wrapper);
+    } else {
+      btnRow.appendChild(revealBtn);
+    }
+
+    const box = document.createElement('div');
+    box.className = 'answer-box';
+    box.id = qid + '-ans';
+    box.innerHTML = '<div class="ans-label">answer</div><pre></pre><div class="annotation"></div>';
+    box.querySelector('pre').textContent = data.answer;
+    box.querySelector('.annotation').textContent = data.note;
+    feedback.insertAdjacentElement('afterend', box);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', addAnswerReferences);
+
 function updateScoreDisplay() {
   document.getElementById('hdr-syntax').textContent = scores.syntax;
   document.getElementById('hdr-concept').textContent = scores.concept;
@@ -1206,9 +1265,10 @@ function checkMCQ(qid, btn, isCorrect) {
 // ───────────── FILL IN ─────────────
 function checkFillPair(qid, ans1, ans2, id1, id2) {
   if (answered.has(qid)) return;
-  const v1 = document.getElementById(id1).value.trim().toLowerCase();
-  const v2 = document.getElementById(id2).value.trim().toLowerCase();
-  const correct = v1 === ans1.toLowerCase() && v2 === ans2.toLowerCase();
+  const clean = value => value.trim().toLowerCase().replace(/_/g, '');
+  const v1 = clean(document.getElementById(id1).value);
+  const v2 = clean(document.getElementById(id2).value);
+  const correct = v1 === clean(ans1) && v2 === clean(ans2);
   finishFill(qid, correct, [id1, id2], qid.startsWith('s') ? 'syntax' : 'concept');
 }
 
