@@ -288,6 +288,70 @@ strong{
   max-width:450px;
 }
 
+@page{
+  size:297mm 210mm;
+  margin:0;
+}
+
+@media print{
+
+  html,
+  body{
+    width:297mm;
+    height:210mm;
+    overflow:visible;
+    background:var(--bg);
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  #progress,
+  .nav-controls{
+    display:none;
+  }
+
+  #deck{
+    display:block;
+    width:auto;
+    height:auto;
+    transform:none !important;
+    transition:none;
+  }
+
+  .slide{
+    width:297mm;
+    min-width:297mm;
+    height:210mm;
+    min-height:210mm;
+    padding:8mm;
+    opacity:1;
+    page-break-after:always;
+    break-after:page;
+    transition:none;
+  }
+
+  .slide:last-child{
+    page-break-after:auto;
+    break-after:auto;
+  }
+
+  .slide-content{
+    width:100%;
+    max-width:none;
+    height:100%;
+    border:none;
+    box-shadow:none;
+  }
+
+  .slide-counter{
+    right:8mm;
+    bottom:5mm;
+    z-index:2;
+    padding:1mm 2mm;
+    background:var(--surface);
+  }
+}
+
 </style>
 
 </head>
@@ -325,7 +389,7 @@ the optimal number of clusters.
 
 <div class="hero-author">
 
-<p><strong>Hamza Arif</strong></p>
+<p><strong>Hamza Arif   2024206</strong></p>
 
 <span>Unsupervised Learning</span>
 
