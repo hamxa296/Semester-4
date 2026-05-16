@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Master Scenario: Autonomous Rescue Robot</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #d35400; /* Industrial Orange */
+            --secondary: #2c3e50;
+            --bg: #f4f7f6;
+            --surface: #ffffff;
+            --text: #333333;
+            --success: #27ae60;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 5px solid var(--primary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section-title {
+            color: var(--secondary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        /* Accordion Styles for Q&A */
+        .qa-card {
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .qa-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .question {
+            padding: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--surface);
+        }
+
+        .question:hover {
+            background-color: #fafafa;
+        }
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+            background-color: #fcfcfc;
+            border-top: 1px solid #eee;
+        }
+
+        .answer.open {
+            padding: 1.5rem;
+            max-height: 2000px; /* Arbitrary large number for animation */
+        }
+
+        .math-block {
+            background: #eef2f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        /* MCQ Styles */
+        .mcq-card {
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option {
+            display: block;
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option:hover {
+            background: #e2e6ea;
+            border-color: #dae0e5;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: var(--success);
+            color: #155724;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: var(--error);
+            color: #721c24;
+        }
+
+        .mcq-feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background-color: var(--secondary); color: white; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Autonomous Rescue Robot</h1>
+    <p>Reinforcement Learning Master Scenario & Interactive Quiz</p>
+</header>
+
+<div class="container">
+    <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h2>Environment Description</h2>
+        <p>The robot moves on a grid. Each state contains: Robot position \( (x,y) \), Battery level \( (b) \), Heat exposure level \( (h) \).</p>
+        <p><strong>Actions:</strong> UP, DOWN, LEFT, RIGHT, SCAN, CHARGE, EXIT.</p>
+        <p><strong>Stochasticity:</strong> Movement succeeds 80% of the time (20% slip). SCAN succeeds 90%. EXIT requires >20% battery.</p>
+    </div>
+
+    <h2 class="section-title">PART A — Fundamental RL Understanding</h2>
+    
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q1: Define the formal RL concepts for this scenario.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>State Space:</strong> The set of all possible situations. \( s=(x,y,b,h) \)</p>
+            <p><strong>Action Space:</strong> \( A=\{\text{UP, DOWN, LEFT, RIGHT, SCAN, CHARGE, EXIT}\} \)</p>
+            <p><strong>Reward Function:</strong> Numerical feedback per state \( R(s) \). e.g., Survivor +100, Crash -150.</p>
+            <p><strong>Policy:</strong> Behavior strategy mapping states to actions \( \pi(s)=a \).</p>
+            <p><strong>Return:</strong> Total discounted future reward \( G_t=R_{t+1}+\gamma R_{t+2}+\dots \).</p>
+            <p><strong>Discount Factor (\( \gamma \)):</strong> Controls importance of future rewards (0 to 1).</p>
+            <p><strong>Q-function \( Q(s,a) \):</strong> Expected return if starting in state \( s \), taking action \( a \), then acting optimally.</p>
+            <p><strong>Environment:</strong> The world (walls, hazards) interacting with the robot.</p>
+            <p><strong>Agent:</strong> The rescue robot.</p>
+            <p><strong>Markov Decision Process:</strong> The full framework: agent observes state, chooses action, environment gives next state and reward.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q2: Compute the return \( G_0 \) for rewards {-1, -1, -20, 100, 200} with \( \gamma = 0.9 \).<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <div class="math-block">
+                \[ G_0 = R_1 + \gamma R_2 + \gamma^2R_3 + \gamma^3R_4 + \gamma^4R_5 \]
+                \[ G_0 = -1 + 0.9(-1) + 0.9^2(-20) + 0.9^3(100) + 0.9^4(200) \]
+                \[ G_0 = -1 - 0.9 - 16.2 + 72.9 + 131.22 = 186.02 \]
+            </div>
+            <p><strong>Physical Meaning:</strong> Even though the robot suffered penalties initially, the later large rewards dominate. The sequence was highly successful.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q3: Explain exactly how behavior changes if \( \gamma = 0 \).<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>If \( \gamma = 0 \), then \( G_t = R_{t+1} \). The robot ONLY cares about immediate reward and becomes completely short-sighted. It would avoid immediate penalties but ignore future consequences, failing at long-term rescue planning.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q4: What is one major advantage and disadvantage of \( \gamma = 0.999 \)?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Advantage:</strong> Strongly values long-term outcomes. Can sacrifice small short-term reward for huge future mission success.</p>
+            <p><strong>Disadvantage:</strong> Learning becomes harder/slower because extremely distant rewards heavily influence decisions (credit assignment becomes difficult).</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">PART B — Policies and Q-functions</h2>
+    
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q5 & Q6: Write the optimal policy action mathematically for State s, and explain what \( Q(s,\text{SCAN})=70 \) means.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q5:</strong> Choose action with highest Q-value. \( \pi(s) = \arg\max_a Q(s,a) = \text{SCAN} \).</p>
+            <p><strong>Q6:</strong> It means: If the robot starts in state \( s \), performs SCAN once, then behaves optimally afterward, the <em>expected discounted future return</em> is 70. It does NOT mean immediate reward is 70.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q7 & Q8: Does Q-function measure immediate reward only? Why might SCAN be negative despite a +20 immediate reward?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q7:</strong> FALSE. It measures immediate reward PLUS discounted future rewards.</p>
+            <p><strong>Q8:</strong> If the immediate reward is +20, but the action traps the robot leading to a -150 penalty later, the future negative consequences outweigh the immediate gain. Total return evaluates complete future consequences.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q9: Explain the difference between \( Q^\pi(s,a) \) and \( Q^*(s,a) \).<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>\( Q^\pi(s,a) \):</strong> Value assuming the robot follows a PARTICULAR policy (e.g., cautious vs aggressive) afterward.</p>
+            <p><strong>\( Q^*(s,a) \):</strong> Optimal possible value. Assumes robot behaves perfectly after taking action \( a \).</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">PART C — Bellman Equation</h2>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q10, Q11, Q12: Compute \( Q(s,a) \) using Bellman. Interpret it. What does "learning" mean here?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q10 Compute:</strong> Given \( R(s)=-1 \), \( \gamma=0.9 \), and \( \max Q(s',a')=60 \). <br>
+            \( Q(s,a) = R(s) + \gamma \max_{a'} Q(s',a') = -1 + 0.9(60) = 53 \).</p>
+            <p><strong>Q11 Meaning:</strong> The action is good overall because despite a small immediate penalty, it leads to excellent future states.</p>
+            <p><strong>Q12 Learning:</strong> If the old belief was 120 and the new target is 53, the robot realized "This action is not nearly as valuable as I thought." Learning is correcting value estimates using experience.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">PART D — Stochastic Environments</h2>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q13 & Q14: Compute Expectation and Stochastic Bellman Estimate.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q13 Expectation:</strong><br>
+            \( E[\max Q(s',a')] = 0.5(100) + 0.3(-50) + 0.2(20) = 50 - 15 + 4 = 39 \).</p>
+            <p><strong>Q14 Bellman:</strong><br>
+            \( Q(s,a) = R(s) + \gamma E[\max Q(s',a')] = -1 + 0.9(39) = 34.1 \).</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q15: Why is expectation REQUIRED in stochastic environments?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Because the same action can lead to multiple outcomes. Ignoring it would overestimate lucky outcomes and underestimate risky outcomes. Expectation averages all possible futures properly.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">PART E — Continuous State Spaces</h2>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q16 & Q17: Why is the state space continuous, and why are Q-tables impractical?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q16:</strong> Variables (position, velocity, angle) can take infinitely many values, not just discrete labels.</p>
+            <p><strong>Q17:</strong> Continuous variables create infinitely many possible states. You cannot store infinite table entries.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q18: Compare this robot problem to Lunar Lander.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <ul>
+                <li><strong>Continuous Variables:</strong> position, velocity, angle, angular velocity.</li>
+                <li><strong>Discrete Actions:</strong> fire left/right thruster, main engine, do nothing.</li>
+                <li><strong>Reward Shaping:</strong> Positive for landing/grounded legs; Negative for crashing/fuel usage.</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 class="section-title">PART F — Deep Conceptual Questions</h2>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q19: Does policy cause Q-function, or does Q-function cause policy?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Both are partially correct. Policy influences Q-values because future behavior determines future rewards. Q-values influence policy because policy often chooses the highest-Q action. They improve each other iteratively.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q20 & Q21 & Q22: Battery delay, Supervised vs RL, and value of crashes.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p><strong>Q20 Battery:</strong> Immediate +10, later -200. Total future return becomes highly negative. RL learns long-term consequences dominate.</p>
+            <p><strong>Q21 RL vs Supervised:</strong> Supervised is given correct answers directly. RL has no correct action labels; the agent must discover good behavior via rewards and trial/error.</p>
+            <p><strong>Q22 Crashes:</strong> Crashes generate strong negative rewards. They teach the agent "Actions leading here are bad." Bad experiences are informative training data.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">EXTREMELY TRICKY MCQs</h2>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 1:</strong> The quantity \( Q(s,a) \) represents:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) Immediate reward after taking action a</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) Expected discounted future return after taking action a and then acting optimally</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) Best possible reward obtainable from state s regardless of action</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) Probability of success after taking action a</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 2:</strong> If \( \gamma = 0 \), then the agent:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) considers all future rewards equally</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) ignores immediate rewards</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) only cares about immediate reward</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) cannot learn</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 3:</strong> In a stochastic environment:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) the next state is always deterministic</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) the same action may lead to different next states</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) Bellman equation becomes invalid</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) policies cannot exist</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 4:</strong> The expression \( \max_a Q(s,a) \) means:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) the action itself</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) the maximum achievable return from state s</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) the probability of entering state s</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) the immediate reward at state s</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 5:</strong> Which statement is MOST correct?</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) A good immediate reward always means a good action</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) Q-values only depend on the current state</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) Future rewards can completely change whether an action was good</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) Policies are unrelated to Q-functions</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 6:</strong> Why is discounting useful?</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) It guarantees no negative rewards</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) It prioritizes nearer rewards over very distant uncertain rewards</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) It removes stochasticity</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) It eliminates the need for policies</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="0">
+        <p><strong>MCQ 7:</strong> The Bellman equation breaks Q-value into:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) current reward + discounted optimal future value</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) probability + action count</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) state value + randomness</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) policy + exploration</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 8:</strong> Suppose \( Q(s,\text{LEFT}) > Q(s,\text{RIGHT}) \). Under greedy policy, the agent:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) must choose RIGHT</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) chooses randomly</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) chooses LEFT</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) cannot define a policy</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 9:</strong> Which is TRUE?</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) The environment chooses the policy</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) The policy maps actions to states</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) The return depends on sequence of actions taken</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) Rewards alone define optimal behavior without future consideration</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 10:</strong> The MAIN objective of RL is to:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) maximize immediate reward only</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) predict future states perfectly</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) maximize expected return</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) avoid all negative rewards entirely</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+</div>
+
+<script>
+    // Accordion Toggle Logic
+    function toggleAnswer(element) {
+        const answer = element.nextElementSibling;
+        const icon = element.querySelector('.toggle-icon');
+        
+        if (answer.classList.contains('open')) {
+            answer.classList.remove('open');
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            answer.classList.add('open');
+            icon.style.transform = 'rotate(45deg)';
+        }
+    }
+
+    // MCQ Logic
+    function checkMCQ(optionElement, selectedIndex) {
+        const card = optionElement.parentElement;
+        const correctIndex = parseInt(card.getAttribute('data-correct'));
+        const allOptions = card.querySelectorAll('.option');
+        const feedback = card.querySelector('.mcq-feedback');
+
+        // Reset previous selections in this card
+        allOptions.forEach(opt => {
+            opt.classList.remove('correct', 'incorrect');
+        });
+
+        // Check answer
+        if (selectedIndex === correctIndex) {
+            optionElement.classList.add('correct');
+            feedback.textContent = "Correct!";
+            feedback.style.color = "var(--success)";
+        } else {
+            optionElement.classList.add('incorrect');
+            allOptions[correctIndex].classList.add('correct'); // Show the right one
+            feedback.textContent = "Incorrect. The highlighted option is the correct answer.";
+            feedback.style.color = "var(--error)";
+        }
+        
+        feedback.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
