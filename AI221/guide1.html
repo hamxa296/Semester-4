@@ -40,6 +40,57 @@
             padding: 0 1rem;
         }
 
+        .page-selector {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(244, 247, 246, 0.96);
+            border-bottom: 1px solid #dfe6e9;
+            backdrop-filter: blur(8px);
+        }
+
+        .selector-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0.85rem 1rem;
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .page-button {
+            border: 2px solid var(--secondary);
+            background: var(--surface);
+            color: var(--secondary);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-button:hover,
+        .page-button.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .scenario-banner {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
         .section-title {
             color: var(--secondary);
             border-bottom: 2px solid var(--primary);
@@ -100,6 +151,127 @@
             padding: 10px;
             border-radius: 5px;
             overflow-x: auto;
+        }
+
+        .q-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .q-chip {
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .q-chip strong {
+            display: block;
+            color: var(--secondary);
+        }
+
+        .q-chip.best,
+        .q-chip:hover {
+            border-color: var(--primary);
+            background: #fff3e8;
+        }
+
+        .q-chip.correct {
+            background: #d4edda;
+            border-color: var(--success);
+            color: #155724;
+        }
+
+        .q-chip.incorrect {
+            background: #f8d7da;
+            border-color: var(--error);
+            color: #721c24;
+        }
+
+        .mini-feedback {
+            display: none;
+            padding: 0.9rem;
+            margin-top: 0.75rem;
+            border-radius: 8px;
+            background: #eef2f5;
+            font-weight: 700;
+        }
+
+        .insight-box {
+            background: #eef2f5;
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+        }
+
+        .task-card h3 {
+            margin-top: 0;
+            color: var(--secondary);
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .pill {
+            background: #eef2f5;
+            border: 1px solid #d7dee5;
+            border-radius: 999px;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .reveal-button {
+            border: 0;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .reveal-panel {
+            display: none;
+            margin-top: 0.8rem;
+            padding: 0.85rem;
+            background: #fcfcfc;
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+        }
+
+        .reveal-panel.open {
+            display: block;
+        }
+
+        .compact-list li {
+            margin-bottom: 0.35rem;
         }
 
         /* MCQ Styles */
@@ -165,7 +337,15 @@
     <p>Reinforcement Learning Master Scenario & Interactive Quiz</p>
 </header>
 
-<div class="container">
+<nav class="page-selector" aria-label="Guide pages">
+    <div class="selector-inner">
+        <button class="page-button active" type="button" onclick="showPage('master-guide', this)">Master Guide</button>
+        <button class="page-button" type="button" onclick="showPage('hard-exam', this)">Hard RL Exam</button>
+        <button class="page-button" type="button" onclick="showPage('nn-exam', this)">Neural Network Exam</button>
+    </div>
+</nav>
+
+<div class="container page active" id="master-guide">
     <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h2>Environment Description</h2>
         <p>The robot moves on a grid. Each state contains: Robot position \( (x,y) \), Battery level \( (b) \), Heat exposure level \( (h) \).</p>
@@ -408,7 +588,351 @@
 
 </div>
 
+<div class="container page" id="hard-exam">
+    <div class="scenario-banner">
+        <h2>Hard RL Mixed Scenario: Autonomous Mine Rescue Drone</h2>
+        <p>Use this page as a compact interactive exam. Pick answers, reveal solutions, and test the Bellman/expectation logic directly.</p>
+    </div>
+
+    <h2 class="section-title">Interactive Q-value Check</h2>
+    <div class="mcq-card">
+        <p><strong>Q1:</strong> Click the greedy action from these Q-values.</p>
+        <div class="q-grid">
+            <div class="q-chip" onclick="checkGreedy(this, false)"><strong>UP</strong>40</div>
+            <div class="q-chip" onclick="checkGreedy(this, false)"><strong>DOWN</strong>55</div>
+            <div class="q-chip" onclick="checkGreedy(this, false)"><strong>LEFT</strong>55</div>
+            <div class="q-chip" onclick="checkGreedy(this, false)"><strong>RIGHT</strong>20</div>
+            <div class="q-chip best" onclick="checkGreedy(this, true)"><strong>SCAN</strong>90</div>
+            <div class="q-chip" onclick="checkGreedy(this, false)"><strong>EXIT</strong>60</div>
+        </div>
+        <div class="mini-feedback"></div>
+        <div class="insight-box">
+            Greedy chooses \( \pi(s)=\arg\max_a Q(s,a) \). Max Q is 90, so the greedy action is SCAN.
+            Under \( \epsilon \)-greedy with \( \epsilon=0.1 \), SCAN is still most likely: 90% exploitation plus some chance from random exploration.
+        </div>
+    </div>
+
+    <h2 class="section-title">Questions With Full Solutions</h2>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q2: What does \( Q(s,\text{SCAN})=90 \) mean? Does it include immediate reward?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>It means: starting from state \( s \), if the agent takes SCAN once and then behaves optimally afterward, the expected discounted total return is 90.</p>
+            <p>It includes immediate reward plus all future discounted rewards. Q is a long-term expectation, not a single-step reward.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q3: Bellman update with reward +10, \( \gamma=0.9 \), next max Q = 80.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <div class="math-block">
+                \[ Q(s,a)=R(s)+\gamma \max_{a'}Q(s',a') \]
+                \[ Q = 10 + 0.9(80) = 10 + 72 = 82 \]
+            </div>
+            <p>Even though SCAN gives +10 immediately, most of the value comes from future outcomes.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">Notes</h2>
+
+    <div class="insight-box">
+        <p><strong>Bellman Optimality Equation:</strong> \( Q(s,a) \) evaluates forcing one manual override action first, then behaving optimally from the next state \( s' \). In contrast, \( V(s) \) evaluates the value of following a policy from the current state onward.</p>
+        <p>The term \( \max_{a'} Q(s',a') \) scans all available actions in the next state and returns the best possible future Q-value. This recursive chaining lets reward signals move backward from terminal states through earlier decisions.</p>
+        <p>A terminal state acts like the base case of the recursion: when no future states exist, the value collapses to immediate reward, \( Q(s,a)=R(s) \). Step by step, this propagation maps out the optimal policy.</p>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q4: Why use expectation instead of the best possible outcome?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Because the next state is stochastic. The same action can lead to multiple possible outcomes, so value must be a weighted average over those outcomes.</p>
+            <p>Using only the best case assumes the environment always gives the lucky result, which is incorrect.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q5: Q depends on policy, and policy depends on Q. Why is this not a contradiction?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>It is a fixed-point system. Q is evaluated under a policy or optimality assumption, and a policy can be derived from Q.</p>
+            <ol>
+                <li>Assume policy, then estimate Q.</li>
+                <li>Update Q, then improve policy.</li>
+                <li>Repeat until the two become consistent.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q6: SCAN has 80% +10 path and 20% -60 trap. How does Bellman handle it?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <div class="math-block">
+                \[ E[Q] = 0.8(10+\text{future}) + 0.2(-60+\text{future}) \]
+            </div>
+            <p>Good and bad outcomes both contribute, weighted by probability. That is how risk enters the value estimate.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q7: SCAN has highest Q. Why can greedy still fail early in training?<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Early Q-values are often inaccurate. A greedy policy exploits those wrong estimates and may overcommit to an action that only looks good because the agent has not explored enough.</p>
+        </div>
+    </div>
+
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">Q8: Explain the full RL loop with stochasticity.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <ol>
+                <li>Policy chooses an action based on Q.</li>
+                <li>Environment randomly transitions to the next state.</li>
+                <li>Reward is observed.</li>
+                <li>Bellman update corrects Q using the sampled outcome.</li>
+                <li>Updated Q changes the policy.</li>
+            </ol>
+            <p>Stochasticity enters at step 2: the same action can produce different next states.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">MCQs</h2>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 1:</strong> \( \max_{a'} Q(s',a') \) represents:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) immediate reward only</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) future optimal decision-making</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) random exploration probability</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) the current policy label</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 2:</strong> Why do we need expectation?</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) because rewards are always positive</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) because Q-values cannot be updated directly</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) because next state is uncertain</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) because greedy policies are deterministic</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="2">
+        <p><strong>MCQ 3:</strong> \( \epsilon \)-greedy ensures:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) pure exploitation</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) pure randomness</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) balance between exploration and exploitation</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) deterministic convergence after one step</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 4:</strong> The Bellman equation is:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) a supervised learning loss only</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) recursive definition of optimal value</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) a rule that removes stochasticity</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) an action list</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="mcq-card" data-correct="1">
+        <p><strong>MCQ 5:</strong> Perfect Q-values plus greedy policy gives:</p>
+        <div class="option" onclick="checkMCQ(this, 0)">A) random behavior</div>
+        <div class="option" onclick="checkMCQ(this, 1)">B) optimal behavior</div>
+        <div class="option" onclick="checkMCQ(this, 2)">C) no future planning</div>
+        <div class="option" onclick="checkMCQ(this, 3)">D) impossible Bellman updates</div>
+        <div class="mcq-feedback"></div>
+    </div>
+
+    <div class="insight-box">
+        <strong>Final compression:</strong> Q tells how good an action is long-term. Policy chooses using Q. Environment produces random outcomes. Bellman ties present reward to future value. Learning is repeated correction from stochastic experience.
+    </div>
+</div>
+
+<div class="container page" id="nn-exam">
+    <div class="scenario-banner">
+        <h2>Comprehensive Neural Network Exam</h2>
+        <p>Smart autonomous traffic management system: theory, architecture, shapes, activations, losses, parameter counts, and trick questions.</p>
+        <div class="pill-row">
+            <span class="pill">Input features: 10</span>
+            <span class="pill">Hidden 1: 18</span>
+            <span class="pill">Hidden 2: 12</span>
+            <span class="pill">Hidden 3: 8</span>
+            <span class="pill">Output: task dependent</span>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part A - Architecture & Matrix Shapes</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">A1: Determine dimensions of \( W^{[1]}, b^{[1]}, W^{[2]}, b^{[2]}, W^{[3]}, b^{[3]} \).<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <div class="math-block">
+                \[ W^{[1]} \in \mathbb{R}^{18 \times 10},\quad b^{[1]} \in \mathbb{R}^{18 \times 1} \]
+                \[ W^{[2]} \in \mathbb{R}^{12 \times 18},\quad b^{[2]} \in \mathbb{R}^{12 \times 1} \]
+                \[ W^{[3]} \in \mathbb{R}^{8 \times 12},\quad b^{[3]} \in \mathbb{R}^{8 \times 1} \]
+            </div>
+        </div>
+    </div>
+
+    <div class="exam-grid">
+        <div class="task-card">
+            <h3>Task 1: Binary Classification</h3>
+            <p>Predict severe congestion: Yes or No.</p>
+            <button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal design</button>
+            <div class="reveal-panel">
+                <p>Output neurons: 1. Activation: sigmoid. Hidden activation: ReLU. Loss: binary cross-entropy.</p>
+                <p>\( W^{[4]} \in \mathbb{R}^{1 \times 8},\ b^{[4]} \in \mathbb{R}^{1 \times 1} \)</p>
+            </div>
+        </div>
+        <div class="task-card">
+            <h3>Task 2: Multiclass Classification</h3>
+            <p>Predict exactly one road condition among six classes.</p>
+            <button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal design</button>
+            <div class="reveal-panel">
+                <p>Output neurons: 6. Activation: softmax. Hidden activation: ReLU. Loss: categorical cross-entropy.</p>
+                <p>\( W^{[4]} \in \mathbb{R}^{6 \times 8},\ b^{[4]} \in \mathbb{R}^{6 \times 1} \)</p>
+            </div>
+        </div>
+        <div class="task-card">
+            <h3>Task 3: Multi-label Classification</h3>
+            <p>Detect car, bus, ambulance, motorcycle, pedestrian simultaneously.</p>
+            <button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal design</button>
+            <div class="reveal-panel">
+                <p>Output neurons: 5. Activation: sigmoid per output. Hidden activation: ReLU. Loss: binary cross-entropy.</p>
+                <p>\( W^{[4]} \in \mathbb{R}^{5 \times 8},\ b^{[4]} \in \mathbb{R}^{5 \times 1} \)</p>
+            </div>
+        </div>
+        <div class="task-card">
+            <h3>Task 4: Regression</h3>
+            <p>Predict flow rate, fuel wastage, and delay time. Values may be negative.</p>
+            <button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal design</button>
+            <div class="reveal-panel">
+                <p>Output neurons: 3. Activation: linear. Hidden activation: ReLU. Loss: MSE or MAE.</p>
+                <p>\( W^{[4]} \in \mathbb{R}^{3 \times 8},\ b^{[4]} \in \mathbb{R}^{3 \times 1} \)</p>
+            </div>
+        </div>
+        <div class="task-card">
+            <h3>Task 5: Non-negative Regression</h3>
+            <p>Predict accidents and traffic violations. Values cannot be negative.</p>
+            <button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal design</button>
+            <div class="reveal-panel">
+                <p>Output neurons: 2. Activation: ReLU or softplus. Hidden activation: ReLU. Loss: MSE, MAE, or Poisson-style loss for counts.</p>
+                <p>\( W^{[4]} \in \mathbb{R}^{2 \times 8},\ b^{[4]} \in \mathbb{R}^{2 \times 1} \)</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part B - Activation Function Traps</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">B1-B6: Activation traps and conceptual checks.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <ol class="compact-list">
+                <li><strong>B1:</strong> Why is ReLU usually preferred in hidden layers instead of sigmoid? Discuss gradient behavior, training speed, and saturation.</li>
+                <li><strong>B2:</strong> Hidden layers linear, output linear. Explain mathematically what the entire network collapses into regardless of depth.</li>
+                <li><strong>B3:</strong> Sigmoid for temperatures between \(-40^\circ C\) and \(50^\circ C\). Explain why this is fundamentally incorrect.</li>
+                <li><strong>B4:</strong> Softmax for a multi-label problem. Explain conceptual failure and mathematical probability problems.</li>
+                <li><strong>B5:</strong> When is ReLU output activation appropriate in regression? Give practical examples.</li>
+                <li><strong>B6:</strong> Can sigmoid ever be used in hidden layers? If yes, why is it still less preferred than ReLU?</li>
+            </ol>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part C - Loss Function Selection</h2>
+    <div class="exam-grid">
+        <div class="task-card"><h3>Scenario 1</h3><p>Predict whether a patient has cancer.</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">Binary classification: 1 sigmoid output, binary cross-entropy. Softmax with many outputs is unnecessary; MSE is weaker for probabilities.</div></div>
+        <div class="task-card"><h3>Scenario 2</h3><p>Predict handwritten digit 0-9.</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">Multiclass classification: 10 softmax outputs, categorical cross-entropy. Sigmoid would not enforce exactly one digit.</div></div>
+        <div class="task-card"><h3>Scenario 3</h3><p>Predict all diseases simultaneously present.</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">Multi-label classification: one sigmoid per disease, binary cross-entropy. Softmax is wrong because diseases can co-exist.</div></div>
+        <div class="task-card"><h3>Scenario 4</h3><p>Predict house price.</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">Regression: 1 linear output, MSE or MAE. Sigmoid restricts the numeric range.</div></div>
+        <div class="task-card"><h3>Scenario 5</h3><p>Predict temperature, rainfall, and wind speed together.</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">Multi-output regression: 3 linear outputs, MSE/MAE. Use non-negative output only for variables that cannot be negative.</div></div>
+    </div>
+
+    <h2 class="section-title">Part D - Forward Propagation & Shapes</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">D1-D5: Matrix multiplication and batch shapes.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Given \( A^{[0]} \in \mathbb{R}^{10 \times 1} \) and \( W^{[1]} \in \mathbb{R}^{18 \times 10} \):</p>
+            <div class="math-block">
+                \[ Z^{[1]} = W^{[1]}A^{[0]} + b^{[1]} \in \mathbb{R}^{18 \times 1},\quad A^{[1]} \in \mathbb{R}^{18 \times 1} \]
+            </div>
+            <p>Multiplication is valid because inner dimensions match: \( (18 \times 10)(10 \times 1) = 18 \times 1 \).</p>
+            <p>If \( W^{[1]} \in \mathbb{R}^{10 \times 18} \), then \( (10 \times 18)(10 \times 1) \) breaks because 18 does not match 10.</p>
+            <p>With batch size 64: \( A^{[0]} \in \mathbb{R}^{10 \times 64} \), \( Z^{[1]} \in \mathbb{R}^{18 \times 64} \), \( A^{[1]} \in \mathbb{R}^{18 \times 64} \).</p>
+            <p>For \( W^{[2]} \in \mathbb{R}^{12 \times 18} \) and \( A^{[1]} \in \mathbb{R}^{18 \times 64} \), \( Z^{[2]} \in \mathbb{R}^{12 \times 64} \).</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part E - Softmax vs Sigmoid</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">E1-E5: Object detection with car, bus, bicycle, pedestrian.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Using 4 softmax outputs is wrong if multiple objects can appear together. Softmax assumes mutually exclusive classes and forces competition between outputs.</p>
+            <p>Use 4 sigmoid outputs instead, one independent probability per object.</p>
+            <p>Softmax computes \( e^{z_i}/\sum_j e^{z_j} \), so outputs must sum to 1. It cannot output \([0.8, 0.7, 0.6, 0.5]\) because the sum is 2.6.</p>
+            <p>Sigmoid can output \([0.8, 0.7, 0.6, 0.5]\) because each output is independently squashed into \([0,1]\).</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part F - Parameter Counting</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">F1-F3: Count parameters and reason about computation cost.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <p>Architecture: 10 -> 18 -> 12 -> 8 -> 6.</p>
+            <div class="math-block">
+                \[ \text{Weights}=18(10)+12(18)+8(12)+6(8)=180+216+96+48=540 \]
+                \[ \text{Biases}=18+12+8+6=44 \]
+                \[ \text{Total parameters}=584 \]
+            </div>
+            <p>If Hidden Layer 2 changes from 12 to 50, \( W^{[2]}, b^{[2]}, W^{[3]} \) change shape. \( W^{[1]} \) stays the same.</p>
+            <p>More neurons increase matrix sizes, multiplications, memory usage, and gradient computations.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part G - Conceptual Deep Learning Questions</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">G1-G5: Feature engineering, data, GPUs, Adam, and CNN overfitting.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <ol class="compact-list">
+                <li><strong>G1:</strong> Explain how hidden layers automatically build features from raw inputs.</li>
+                <li><strong>G2:</strong> Why do deeper networks usually benefit more from large datasets?</li>
+                <li><strong>G3:</strong> Why were GPUs critical for deep learning progress?</li>
+                <li><strong>G4:</strong> What does Adam do differently from standard gradient descent?</li>
+                <li><strong>G5:</strong> Why are convolutional layers less prone to overfitting than dense layers?</li>
+            </ol>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part H - Advanced Trick Questions</h2>
+    <div class="qa-card">
+        <div class="question" onclick="toggleAnswer(this)">H1-H5: Trick questions about activations and layer meaning.<span class="toggle-icon">+</span></div>
+        <div class="answer">
+            <ol class="compact-list">
+                <li><strong>H1:</strong> A multiclass classifier outputs \([0.2, 0.3, 0.4, 0.1]\). What activation was most likely used? Explain.</li>
+                <li><strong>H2:</strong> A network uses 25 hidden layers with only linear activations. Is this mathematically deep learning?</li>
+                <li><strong>H3:</strong> Can binary classification use 2 softmax outputs instead of 1 sigmoid output? Discuss correctness, redundancy, and efficiency.</li>
+                <li><strong>H4:</strong> Why does sigmoid not force outputs to sum to 1?</li>
+                <li><strong>H5:</strong> Why does a dense neuron depend on all previous activations while a convolution neuron depends on local regions?</li>
+            </ol>
+        </div>
+    </div>
+
+    <h2 class="section-title">Part I - Output Layer Design Drill</h2>
+    <div class="exam-grid">
+        <div class="task-card"><h3>I1: Spam Detection</h3><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">1 neuron, sigmoid, binary cross-entropy.</div></div>
+        <div class="task-card"><h3>I2: One Animal</h3><p>cat, dog, horse, cow, sheep</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">5 neurons, softmax, categorical cross-entropy.</div></div>
+        <div class="task-card"><h3>I3: Face Attributes</h3><p>smile, glasses, beard, hat</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">4 neurons, sigmoid, binary cross-entropy.</div></div>
+        <div class="task-card"><h3>I4: Stock Outputs</h3><p>stock price, profit, loss</p><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">3 neurons, linear, MSE or MAE.</div></div>
+        <div class="task-card"><h3>I5: Rainfall + Floods</h3><button class="reveal-button" type="button" onclick="toggleReveal(this)">Reveal</button><div class="reveal-panel">2 outputs. Use linear/softplus depending on rainfall scaling; floods should be ReLU or softplus. Loss: MSE/MAE, or count-aware loss for floods.</div></div>
+    </div>
+</div>
+
 <script>
+    function showPage(pageId, button) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.querySelectorAll('.page-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        button.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise();
+        }
+    }
+
     // Accordion Toggle Logic
     function toggleAnswer(element) {
         const answer = element.nextElementSibling;
@@ -448,6 +972,37 @@
         }
         
         feedback.style.display = "block";
+    }
+
+    function checkGreedy(chip, isCorrect) {
+        const card = chip.closest('.mcq-card');
+        const chips = card.querySelectorAll('.q-chip');
+        const feedback = card.querySelector('.mini-feedback');
+
+        chips.forEach(item => item.classList.remove('correct', 'incorrect'));
+
+        if (isCorrect) {
+            chip.classList.add('correct');
+            feedback.textContent = "Correct: SCAN has the maximum Q-value, 90.";
+            feedback.style.color = "var(--success)";
+        } else {
+            chip.classList.add('incorrect');
+            card.querySelector('.q-chip.best').classList.add('correct');
+            feedback.textContent = "Not quite. Greedy chooses the action with the largest Q-value: SCAN = 90.";
+            feedback.style.color = "var(--error)";
+        }
+
+        feedback.style.display = "block";
+    }
+
+    function toggleReveal(button) {
+        const panel = button.nextElementSibling;
+        panel.classList.toggle('open');
+        button.textContent = panel.classList.contains('open') ? 'Hide' : 'Reveal';
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([panel]);
+        }
     }
 </script>
 
