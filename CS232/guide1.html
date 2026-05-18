@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Exam Survival Guide</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --code-bg: #2b2b2b;
+            --code-text: #f8f8f2;
+            --trap-bg: #ffebee;
+            --trap-border: #f44336;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        h1 { font-size: 2.2em; text-align: center; border-bottom: 3px solid var(--primary); }
+        h2 { margin-top: 40px; color: #2980b9; }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        code {
+            background-color: #f1f1f1;
+            color: #d63384;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th { background-color: var(--primary); color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        .trap {
+            background-color: var(--trap-bg);
+            border-left: 5px solid var(--trap-border);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .trap h4 { margin-top: 0; color: var(--trap-border); }
+
+        .success { color: #27ae60; font-weight: bold; }
+        .danger { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Database Exam Survival Guide</h1>
+    <p><em>Mastering syntax precision, execution order, NULL behavior, quotes, commas, and DBMS semantics.</em></p>
+
+    <h2>PART 1 — PostgreSQL + psycopg2 CRUD</h2>
+
+    <h3>First: The Full Flow</h3>
+    <p>In Python with psycopg2, CRUD means:</p>
+    <table>
+        <tr><th>Operation</th><th>SQL</th></tr>
+        <tr><td>Create</td><td><code>INSERT</code></td></tr>
+        <tr><td>Read</td><td><code>SELECT</code></td></tr>
+        <tr><td>Update</td><td><code>UPDATE</code></td></tr>
+        <tr><td>Delete</td><td><code>DELETE</code></td></tr>
+    </table>
+
+    <p>The typical connection and execution flow is:</p>
+<pre><code>import psycopg2
+
+conn = psycopg2.connect(
+    host="localhost",
+    database="testdb",
+    user="postgres",
+    password="1234"
+)
+
+cur = conn.cursor()
+
+# query execute
+cur.execute("SQL QUERY")
+
+conn.commit()
+
+cur.close()
+conn.close()</code></pre>
+
+    <h3>Important Theory Concepts</h3>
+    <p><em>Your teacher will absolutely ask these.</em></p>
+
+    <div class="trap">
+        <h4>1. execute() DOES NOT PRINT RESULTS</h4>
+        <p><span class="danger">WRONG:</span> <code>cur.execute("SELECT * FROM students")</code><br>
+        This executes successfully, but it DOES NOT show rows.</p>
+        <p><span class="success">CORRECT:</span><br>
+        <code>rows = cur.fetchall()</code><br>
+        <code>print(rows)</code></p>
+    </div>
+
+    <div class="trap">
+        <h4>2. SELECT DOES NOT NEED commit()</h4>
+        <p>This is a classic trap:<br>
+        <code>cur.execute("SELECT * FROM students")</code><br>
+        <code>conn.commit()</code><br>
+        This STILL works, but <code>commit</code> is unnecessary because SELECT does not modify the database.</p>
+    </div>
+
+    <div class="trap">
+        <h4>3. INSERT/UPDATE/DELETE REQUIRE COMMIT</h4>
+        <p><strong>BIGGEST EXAM QUESTION.</strong><br>
+        Without commit: <code>cur.execute("INSERT INTO students VALUES (1,'Ali')")</code><br>
+        The query executes INSIDE the transaction, but changes are not permanently saved.<br>
+        <strong>Need:</strong> <code>conn.commit()</code></p>
+    </div>
+
+    <div class="trap">
+        <h4>4. SINGLE QUOTES VS DOUBLE QUOTES</h4>
+        <p>Strings &rarr; SINGLE quotes.</p>
+        <p><span class="success">CORRECT:</span> <code>INSERT INTO students VALUES (1, 'Ali')</code></p>
+        <p><span class="danger">WRONG:</span> <code>INSERT INTO students VALUES (1, "Ali")</code><br>
+        In PostgreSQL: <code>'Ali'</code> &rarr; string. <code>"Ali"</code> &rarr; identifier/column name.<br>
+        PostgreSQL will throw: <em>Error: column "Ali" does not exist</em>.</p>
+    </div>
+
+    <div class="trap">
+        <h4>5. TABLE NAME CASE SENSITIVITY</h4>
+        <p>If a table is created as: <code>CREATE TABLE Students (id INT);</code><br>
+        PostgreSQL internally stores it as: <code>students</code>.</p>
+        <p>So <code>SELECT * FROM students;</code> works.<br>
+        BUT: <code>SELECT * FROM "Students";</code> fails unless the table was explicitly created with quotes.</p>
+    </div>
+
+    <div class="trap">
+        <h4>6. PLACEHOLDERS IN PSYCOPG2</h4>
+        <p><span class="danger">DO NOT DO THIS:</span> (Dangerous + deducts marks)<br>
+        <code>cur.execute(f"SELECT * FROM students WHERE name='{name}'")</code></p>
+        <p><span class="success">CORRECT:</span><br>
+        <code>cur.execute("SELECT * FROM students WHERE name=%s", (name,))</code></p>
+        <p><strong>VERY IMPORTANT:</strong> <code>(name,)</code> NOT <code>(name)</code>.<br>
+        Because <code>(name)</code> is a string, not a tuple. Single-element tuples NEED a comma.</p>
+    </div>
+
+    <h3>CRUD Operations Properly</h3>
+    <h4>CREATE (INSERT)</h4>
+<pre><code>cur.execute(
+    "INSERT INTO students(id,name,cgpa) VALUES(%s,%s,%s)",
+    (1, "Ali", 3.5)
+)
+conn.commit()</code></pre>
+    
+    <h4>READ (SELECT)</h4>
+<pre><code>cur.execute("SELECT * FROM students")
+rows = cur.fetchall()
+for row in rows:
+    print(row)</code></pre>
+
+    <table>
+        <tr><th>Function</th><th>Meaning</th></tr>
+        <tr><td><code>fetchone()</code></td><td>returns ONE row</td></tr>
+        <tr><td><code>fetchall()</code></td><td>returns ALL rows</td></tr>
+        <tr><td><code>fetchmany(3)</code></td><td>returns 3 rows</td></tr>
+    </table>
+
+    <div class="trap">
+        <h4>CURSOR EXHAUSTION</h4>
+        <p><code>cur.execute("SELECT * FROM students")</code><br>
+        <code>print(cur.fetchone())</code> &rarr; Gives first row.<br>
+        <code>print(cur.fetchone())</code> &rarr; Gives second row.<br>
+        The cursor moves forward automatically.</p>
+    </div>
+
+    <h4>UPDATE</h4>
+<pre><code>cur.execute(
+    "UPDATE students SET cgpa=%s WHERE id=%s",
+    (3.9, 1)
+)
+conn.commit()</code></pre>
+    <p><span class="danger">MOST DANGEROUS MISTAKE:</span> <code>UPDATE students SET cgpa=4.0;</code><br>
+    NO WHERE clause. Updates EVERY row.</p>
+
+    <h4>DELETE</h4>
+<pre><code>cur.execute(
+    "DELETE FROM students WHERE id=%s",
+    (1,)
+)
+conn.commit()</code></pre>
+    <p><span class="danger">BIGGEST DELETE TRAP:</span> <code>DELETE FROM students;</code><br>
+    Deletes ALL rows. The table still exists.</p>
+
+    <table>
+        <tr><th>Command</th><th>Removes rows</th><th>Removes table structure</th></tr>
+        <tr><td><code>DELETE</code></td><td>YES</td><td>NO</td></tr>
+        <tr><td><code>TRUNCATE</code></td><td>YES (all rows)</td><td>NO</td></tr>
+        <tr><td><code>DROP TABLE</code></td><td>YES</td><td>YES</td></tr>
+    </table>
+
+    <h3>Transactions</h3>
+    <ul>
+        <li><strong>ROLLBACK:</strong> <code>conn.rollback()</code> undoes changes since the last commit. No changes saved.</li>
+        <li><strong>AUTOCOMMIT:</strong> Normally PostgreSQL uses transactions. Can enable: <code>conn.autocommit = True</code>. Then commit is unnecessary.</li>
+    </ul>
+
+    <h3>SQL Exam Trick Questions</h3>
+    <ul>
+        <li><strong>Q:</strong> <code>cur.execute("SELECT * FROM students"); conn.commit()</code> - Will it execute?<br> <strong>A:</strong> YES. Commit is unnecessary but valid.</li>
+        <li><strong>Q:</strong> <code>cur.execute("INSERT INTO students VALUES (1,'Ali')")</code> - Will row permanently save?<br> <strong>A:</strong> NO, not until commit.</li>
+        <li><strong>Q:</strong> <code>cur.execute("SELECT * FROM students WHERE id=%s", (1))</code> - Will it execute?<br> <strong>A:</strong> NO properly. Because (1) is an integer, not a tuple. Need: <code>(1,)</code>.</li>
+        <li><strong>Q:</strong> <code>SELECT name age FROM students;</code> - Will it execute?<br> <strong>A:</strong> YES. SQL interprets this as implicit alias: <code>SELECT name AS age</code>.</li>
+        <li><strong>Q:</strong> <code>SELECT * FROM students WHERE cgpa = NULL;</code> - Will it work?<br> <strong>A:</strong> NO. Need <code>WHERE cgpa IS NULL</code>. NULL is not comparable with <code>=</code>.</li>
+        <li><strong>Q:</strong> <code>DELETE * FROM students;</code> - Will it execute?<br> <strong>A:</strong> NO. Syntax error. Correct: <code>DELETE FROM students;</code>.</li>
+        <li><strong>Q:</strong> <code>UPDATE students cgpa=3.5 WHERE id=1;</code> - Will it execute?<br> <strong>A:</strong> NO. Missing <code>SET</code>. Correct: <code>UPDATE students SET cgpa=3.5 WHERE id=1;</code>.</li>
+    </ul>
+
+    <hr>
+
+    <h2>PART 2 — Firebase Realtime Database CRUD</h2>
+    <p>The completely different world of NoSQL. Firebase stores data as a JSON tree.</p>
+    
+    <h3>Structure &amp; Connecting</h3>
+<pre><code>import firebase_admin
+from firebase_admin import credentials, db
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://your-project.firebaseio.com/'
+})</code></pre>
+
+    <h3>CRUD Operations</h3>
+    <h4>CREATE (Insert Data)</h4>
+<pre><code>ref = db.reference("students")
+ref.child("1").set({
+    "name": "Ali",
+    "cgpa": 3.5
+})</code></pre>
+    <p><strong>SQL vs Firebase Difference:</strong> SQL uses tables &rarr; rows &rarr; columns. Firebase uses a JSON tree. No tables, no rows, no joins.</p>
+
+    <h4>READ</h4>
+<pre><code># Read all
+ref = db.reference("students")
+data = ref.get()
+print(data)
+
+# Read specific child
+student = ref.child("1").get()</code></pre>
+
+    <h4>UPDATE</h4>
+<pre><code>ref.child("1").update({
+    "cgpa": 3.9
+})</code></pre>
+    <p><em>Only updates specified field.</em></p>
+
+    <h4>DELETE</h4>
+<pre><code>ref.child("1").delete()</code></pre>
+    <p><em>Removes the node.</em></p>
+
+    <h3>Firebase Theory Traps</h3>
+    <div class="trap">
+        <h4>1. set() OVERWRITES</h4>
+        <p><code>ref.child("1").set({"name": "Ali"})</code><br>
+        Replaces the ENTIRE node. Existing fields (like cgpa) are removed.</p>
+    </div>
+    <div class="trap">
+        <h4>2. update() DOES NOT OVERWRITE</h4>
+        <p><code>ref.child("1").update({"cgpa": 4.0})</code><br>
+        Only updates cgpa, leaves name intact.</p>
+    </div>
+    <div class="trap">
+        <h4>3. PUSH CREATES UNIQUE KEYS</h4>
+        <p><code>ref.push({"name": "Ali"})</code><br>
+        Firebase auto-generates a key (e.g., <code>-Mxyz123</code>).</p>
+    </div>
+
+    <h3>SQL vs Firebase (Written Theory Differences)</h3>
+    <table>
+        <tr><th>PostgreSQL</th><th>Firebase</th></tr>
+        <tr><td>Relational DB</td><td>NoSQL DB</td></tr>
+        <tr><td>SQL queries</td><td>Path-based access</td></tr>
+        <tr><td>Schema required</td><td>Schema flexible</td></tr>
+        <tr><td>Tables</td><td>JSON nodes</td></tr>
+        <tr><td>JOIN supported</td><td>JOIN not supported</td></tr>
+        <tr><td>Strong normalization</td><td>Denormalized preferred</td></tr>
+        <tr><td>ACID strong</td><td>Limited transactions</td></tr>
+    </table>
+
+    <h3>Firebase Exam Questions</h3>
+    <ul>
+        <li><strong>Q:</strong> Difference between <code>set()</code> and <code>update()</code>?<br> <strong>A:</strong> <code>set()</code> overwrites the entire node. <code>update()</code> does partial modification.</li>
+        <li><strong>Q:</strong> What happens if path does not exist? <code>ref.child("100").get()</code><br> <strong>A:</strong> Returns <code>None</code>.</li>
+        <li><strong>Q:</strong> Can Firebase perform joins?<br> <strong>A:</strong> NO. You must manually restructure/denormalize data.</li>
+        <li><strong>Q:</strong> Difference between <code>push()</code> and <code>set()</code>?<br> <strong>A:</strong> <code>push()</code> uses auto-key generation. <code>set()</code> uses an explicit key.</li>
+    </ul>
+
+    <hr>
+
+    <h2>Final Exam Survival Advice</h2>
+    <p>Your teacher is likely testing:</p>
+    <ul>
+        <li>Commas in Python tuples (<code>(1,)</code>)</li>
+        <li>Quotes (<code>'value'</code> vs <code>"column"</code>)</li>
+        <li>Transaction semantics (Commit/Rollback)</li>
+        <li>NULL behavior (<code>IS NULL</code>)</li>
+        <li>SQL syntax precision (missing <code>SET</code>, missing <code>WHERE</code>)</li>
+        <li>Overwrite vs Update semantics in NoSQL</li>
+        <li>Implicit aliases (missing commas in SELECT)</li>
+    </ul>
+    
+    <p style="text-align:center; margin-top: 30px; color: var(--primary); font-weight:bold;">
+        Good luck on the exam!
+    </p>
+
+</div>
+
+</body>
+</html>
